@@ -14,9 +14,9 @@ const GraphControls: React.FC<GraphControlsProps> = ({
   onToggleMetrics,
 }) => {
   return (
-    <div className="absolute top-4 left-4 z-10 bg-white/80 backdrop-blur-sm p-3 rounded-lg shadow-md">
+    <div className="absolute top-4 right-4 z-10 bg-white/80 backdrop-blur-sm p-3 rounded-lg shadow-md">
       <div className="flex flex-col space-y-2">
-        <label className="inline-flex items-center cursor-pointer">
+        {/* <label className="inline-flex items-center cursor-pointer">
           <input
             type="checkbox"
             className="form-checkbox h-4 w-4 text-blue-600"
@@ -26,7 +26,7 @@ const GraphControls: React.FC<GraphControlsProps> = ({
           <span className="ml-2 text-sm font-medium text-gray-900">
             그룹별로 표시
           </span>
-        </label>
+        </label> */}
         <label className="inline-flex items-center cursor-pointer">
           <input
             type="checkbox"

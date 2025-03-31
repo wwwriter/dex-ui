@@ -2,6 +2,7 @@ import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import GraphView from "./components/GraphView";
 import { Suspense, lazy } from "react";
+import Header from "./components/Header";
 
 const queryClient = new QueryClient();
 
@@ -12,8 +13,10 @@ function App() {
   return (
     <QueryClientProvider client={queryClient}>
       <Router>
-        <div className="min-h-screen w-screen bg-gray-100">
-          <main className="w-full h-screen">
+        <div className="min-h-screen w-screen bg-gray-100 flex ">
+          <Header />
+
+          <main className="flex-1 h-screen overflow-auto">
             <Suspense fallback={<div>로딩 중...</div>}>
               <Routes>
                 <Route path="/" element={<Home />} />

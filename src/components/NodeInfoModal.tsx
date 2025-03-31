@@ -17,7 +17,7 @@ const NodeInfoModal: React.FC<NodeInfoModalProps> = ({
 
   return (
     <div className="fixed inset-0 bg-black/50 z-50">
-      <div className="fixed right-0 top-1/2 -translate-y-1/2 mr-6">
+      <div className="fixed right-0 top-1/2 -translate-y-1/2 mr-6 min-w-[300px]">
         <div className="bg-white rounded-lg w-full max-w-md max-h-[80vh] overflow-auto shadow-lg">
           <div className="p-4 border-b flex justify-between items-center">
             <h3 className="text-lg font-semibold text-gray-900">

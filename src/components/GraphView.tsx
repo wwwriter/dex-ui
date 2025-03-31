@@ -137,7 +137,7 @@ const GraphView = () => {
 
   // 그래프 코드 생성
   const mermaidCode = useMemo(() => {
-    let code = "flowchart LR\n";
+    let code = "flowchart TD\n";
 
     // 모든 엣지의 색상을 하늘색으로 설정
     code += "  linkStyle default stroke:#66ccff,stroke-width:2px\n\n";
@@ -440,7 +440,7 @@ const GraphView = () => {
   };
 
   return (
-    <div className="w-full h-[calc(100vh-10rem)] bg-gray-900">
+    <div className="w-full h-full bg-gray-900">
       {/* 그래프 컨트롤 */}
       <GraphControls
         showGroups={showGroups}
@@ -450,7 +450,7 @@ const GraphView = () => {
       />
 
       {/* 그래프 범례 */}
-      <GraphLegend selectedNodeId={selectedNodeId} />
+      {/* <GraphLegend selectedNodeId={selectedNodeId} /> */}
 
       {/* 줌 컨트롤 */}
       <ZoomControls
