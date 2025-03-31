@@ -13,10 +13,10 @@ function App() {
   return (
     <QueryClientProvider client={queryClient}>
       <Router>
-        <div className="min-h-screen w-screen bg-gray-100 flex ">
+        <div className="min-h-screen w-screen bg-gray-100 flex flex-col">
           <Header />
 
-          <main className="flex-1 h-screen overflow-auto">
+          <main className="h-[calc(100vh-64px)] overflow-auto">
             <Suspense fallback={<div>로딩 중...</div>}>
               <Routes>
                 <Route path="/" element={<Home />} />

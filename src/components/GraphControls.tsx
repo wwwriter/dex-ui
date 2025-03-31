@@ -14,7 +14,7 @@ const GraphControls: React.FC<GraphControlsProps> = ({
   onToggleMetrics,
 }) => {
   return (
-    <div className="absolute top-4 right-4 z-10 bg-white/80 backdrop-blur-sm p-3 rounded-lg shadow-md">
+    <div className="absolute top-20 right-4 z-10 bg-white/80 backdrop-blur-sm p-3 rounded-lg shadow-md">
       <div className="flex flex-col space-y-2">
         {/* <label className="inline-flex items-center cursor-pointer">
           <input
