@@ -8,6 +8,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import OntologyView from "./pages/OntologyView";
 import { Suspense, lazy } from "react";
 import Header from "./components/Header";
+import OfflineStatus from "./components/OfflineStatus";
 import {
   FiActivity,
   FiAlertCircle,
@@ -164,6 +165,7 @@ function App() {
           </main>
 
           <NavigationTabs />
+          <OfflineStatus />
         </div>
       </Router>
     </QueryClientProvider>
