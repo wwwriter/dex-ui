@@ -1,6 +1,8 @@
 import React, { useState, useRef, useEffect } from "react";
 import { FaRobot, FaUser } from "react-icons/fa";
 import { ChatMessage, fetchChatResponse } from "../api/llmService";
+import ReactMarkdown from "react-markdown";
+// import "github-markdown-css/github-markdown.css";
 
 interface ChatModalProps {
   onClose: () => void;
@@ -18,6 +20,7 @@ const ChatModal: React.FC<ChatModalProps> = ({ onClose }) => {
   const [newMessage, setNewMessage] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
 
   // 스크롤을 항상 최신 메시지로 이동
   const scrollToBottom = () => {
@@ -28,23 +31,180 @@ const ChatModal: React.FC<ChatModalProps> = ({ onClose }) => {
     scrollToBottom();
   }, [messages]);
 
-  // 텍스트에서 **로 감싸진 부분을 볼드체로 변환하는 함수
-  const renderMessageText = (text: string) => {
-    // 마크다운 스타일 강조 처리 (** 표시를 볼드 텍스트로)
-    return text.split("\n").map((line, index) => {
-      // 볼드 텍스트 처리 (**텍스트**)
-      const formattedLine = line.replace(
-        /\*\*([^*]+)\*\*/g,
-        "<strong>$1</strong>"
-      );
+  // 모달이 열릴 때 입력 필드에 포커스
+  useEffect(() => {
+    // 약간의 지연을 줘서 모달 애니메이션이 완료된 후 포커스
+    const timer = setTimeout(() => {
+      inputRef.current?.focus();
+    }, 100);
 
-      return (
-        <React.Fragment key={index}>
-          <span dangerouslySetInnerHTML={{ __html: formattedLine }} />
-          {index < text.split("\n").length - 1 && <br />}
-        </React.Fragment>
-      );
+    return () => clearTimeout(timer);
+  }, []);
+
+  // 중복된 텍스트를 정리하는 함수
+  const cleanDuplicatedText = (text: string): string => {
+    // 줄바꿈, 공백, 특수문자 등을 고려하여 중복 패턴을 정리
+    const lines = text.split("\n");
+    const cleanedLines = lines.map((line) => {
+      // 공백과 특수문자로 구분된 단어 단위로 중복 검사
+      const words = line.split(/(\s+|[.,!?;:*])/);
+      let result = "";
+      let lastWord = "";
+
+      for (const word of words) {
+        if (word !== lastWord) {
+          result += word;
+          lastWord = word;
+        }
+      }
+      return result;
     });
+
+    return (
+      cleanedLines
+        .join("\n")
+        // ** 패턴 정리 (중복 *, **)
+        .replace(/\*{2,}/g, "**")
+        // 중복된 특수문자 정리
+        .replace(/([.,!?;:])\1+/g, "$1")
+        // 연속된: 리스트 표시 (**: **) 패턴 정리
+        .replace(/\*\*:\s*\*\*/g, "**:")
+        // 공백만 제거하고 줄바꿈은 유지
+        .replace(/[^\S\n]{2,}/g, " ")
+        .trim()
+    );
+  };
+
+  const formatMessage = (message: string): string => {
+    return (
+      message
+        // 마크다운 스타일 리스트 포맷팅 개선
+        .replace(/\*\*\s*([^:]+):\s*\*\*/g, "**$1:**")
+        // 이모지 주변 공백 정리
+        .replace(/([\uD800-\uDBFF][\uDC00-\uDFFF])\s+/g, "$1 ")
+        // 연속된 줄바꿈 최대 3개까지 허용 (더 많은 경우 3개로 제한)
+        .replace(/\n{4,}/g, "\n\n\n")
+        .trim()
+    );
+  };
+
+  // 마크다운 컴포넌트 스타일 정의
+  const MarkdownComponents = {
+    // 헤더 커스터마이징
+    h1: ({ node, ...props }: any) => (
+      <h1 className="text-2xl font-bold my-3" {...props} />
+    ),
+    h2: ({ node, ...props }: any) => (
+      <h2 className="text-xl font-bold my-3" {...props} />
+    ),
+    h3: ({ node, ...props }: any) => (
+      <h3 className="text-lg font-bold my-2" {...props} />
+    ),
+    h4: ({ node, ...props }: any) => (
+      <h4 className="text-base font-bold my-2" {...props} />
+    ),
+    // 리스트 커스터마이징
+    ul: ({ node, ...props }: any) => (
+      <ul className="list-disc pl-5 my-2 space-y-1" {...props} />
+    ),
+    ol: ({ node, ...props }: any) => (
+      <ol className="list-decimal pl-5 my-2 space-y-1" {...props} />
+    ),
+    li: ({ node, ...props }: any) => <li className="my-1" {...props} />,
+    // 단락 커스터마이징
+    p: ({ node, ...props }: any) => (
+      <p className="my-2 whitespace-pre-wrap" {...props} />
+    ),
+    // 코드 블록 커스터마이징
+    code: ({ node, inline, className, children, ...props }: any) => {
+      const match = /language-(\w+)/.exec(className || "");
+      return !inline && match ? (
+        <pre className="bg-gray-800 text-white p-3 rounded-md my-3 overflow-auto">
+          <code className={className} {...props}>
+            {children}
+          </code>
+        </pre>
+      ) : (
+        <code
+          className="bg-gray-200 px-1 py-0.5 rounded text-sm font-mono"
+          {...props}
+        >
+          {children}
+        </code>
+      );
+    },
+    // 표 스타일
+    table: ({ node, ...props }: any) => (
+      <div className="overflow-auto my-3">
+        <table
+          className="min-w-full border border-gray-300 text-sm"
+          {...props}
+        />
+      </div>
+    ),
+    thead: ({ node, ...props }: any) => (
+      <thead className="bg-gray-100" {...props} />
+    ),
+    tbody: ({ node, ...props }: any) => (
+      <tbody className="divide-y divide-gray-300" {...props} />
+    ),
+    tr: ({ node, ...props }: any) => (
+      <tr className="hover:bg-gray-50" {...props} />
+    ),
+    th: ({ node, ...props }: any) => (
+      <th
+        className="border border-gray-300 px-4 py-2 text-left font-semibold"
+        {...props}
+      />
+    ),
+    td: ({ node, ...props }: any) => (
+      <td className="border border-gray-300 px-4 py-2" {...props} />
+    ),
+    // 수평선
+    hr: ({ node, ...props }: any) => (
+      <hr className="my-4 border-gray-300" {...props} />
+    ),
+    // 강조 텍스트
+    strong: ({ node, ...props }: any) => (
+      <strong className="font-bold" {...props} />
+    ),
+    // 취소선
+    del: ({ node, ...props }: any) => (
+      <del className="line-through text-gray-500" {...props} />
+    ),
+    // 체크박스 리스트
+    input: ({ node, ...props }: any) => {
+      const { checked, type } = props;
+      return type === "checkbox" ? (
+        <input
+          type="checkbox"
+          checked={checked}
+          readOnly
+          className="mr-1 h-4 w-4 rounded border-gray-300 text-blue-600"
+          {...props}
+        />
+      ) : (
+        <input {...props} />
+      );
+    },
+    // 링크
+    a: ({ node, ...props }: any) => (
+      <a
+        className="text-blue-600 hover:underline"
+        target="_blank"
+        rel="noopener noreferrer"
+        {...props}
+      />
+    ),
+    // 인용구
+    blockquote: ({ node, ...props }: any) => (
+      <blockquote
+        className="pl-4 border-l-4 border-gray-300 italic text-gray-600 my-3"
+        {...props}
+      />
+    ),
+    // 인라인 요소
+    em: ({ node, ...props }: any) => <em className="italic" {...props} />,
   };
 
   const handleSendMessage = async (e: React.FormEvent) => {
@@ -78,14 +238,25 @@ const ChatModal: React.FC<ChatModalProps> = ({ onClose }) => {
       // 모든 메시지 포함하여 API에 전송
       const allMessages = [...messages, userMessage];
 
+      // 누적 응답 처리를 위한 변수
+      let accumulatedResponse = "";
+
       // 스트리밍 응답 처리
       await fetchChatResponse(allMessages, (chunk) => {
+        // 응답 누적
+        accumulatedResponse += chunk;
+
+        // 중복 제거 및 포맷팅 처리
+        const cleanedResponse = cleanDuplicatedText(accumulatedResponse);
+        const formattedResponse = formatMessage(cleanedResponse);
+
+        // 메시지 업데이트
         setMessages((prevMessages) => {
           const updatedMessages = [...prevMessages];
           const lastMessage = updatedMessages[updatedMessages.length - 1];
 
           if (lastMessage && lastMessage.isBot) {
-            lastMessage.text += chunk;
+            lastMessage.text = formattedResponse;
           }
 
           return updatedMessages;
@@ -113,7 +284,7 @@ const ChatModal: React.FC<ChatModalProps> = ({ onClose }) => {
 
   return (
     <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center">
-      <div className="bg-white rounded-lg w-full max-w-md h-[500px] max-h-[80vh] shadow-lg flex flex-col">
+      <div className="bg-white rounded-lg w-[90%] sm:w-full max-w-md h-[90vh] sm:h-[700px] sm:max-h-[80vh] shadow-lg flex flex-col">
         {/* 헤더 */}
         <div className="p-4 border-b flex justify-between items-center">
           <h3 className="text-lg font-semibold text-gray-900">채팅 상담</h3>
@@ -149,7 +320,7 @@ const ChatModal: React.FC<ChatModalProps> = ({ onClose }) => {
                 }`}
               >
                 <div
-                  className={`max-w-[80%] p-3 rounded-lg ${
+                  className={`max-w-[100%] p-3 rounded-lg ${
                     message.isBot
                       ? "bg-gray-100 text-gray-800"
                       : "bg-blue-600 text-white"
@@ -168,8 +339,17 @@ const ChatModal: React.FC<ChatModalProps> = ({ onClose }) => {
                       })}
                     </span>
                   </div>
-                  <div className="whitespace-pre-wrap">
-                    {renderMessageText(message.text)}
+                  <div className="markdown-wrapper">
+                    {message.isBot ? (
+                      <ReactMarkdown
+                        // remarkPlugins={[remarkGfm]}
+                        components={MarkdownComponents}
+                      >
+                        {message.text}
+                      </ReactMarkdown>
+                    ) : (
+                      message.text
+                    )}
                   </div>
                 </div>
               </div>
@@ -188,6 +368,7 @@ const ChatModal: React.FC<ChatModalProps> = ({ onClose }) => {
               placeholder="메시지를 입력하세요..."
               className="flex-1 p-2 border rounded-l-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
               disabled={isLoading}
+              ref={inputRef}
             />
             <button
               type="submit"
