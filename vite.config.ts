@@ -10,6 +10,7 @@ export default defineConfig({
       registerType: "autoUpdate",
       workbox: {
         globPatterns: ["**/*.{js,css,html,ico,png,svg,jpg}"],
+        maximumFileSizeToCacheInBytes: 10 * 1024 * 1024, // 10MB 제한으로 설정
         runtimeCaching: [
           {
             urlPattern: /^https:\/\/api\.*/i,

@@ -279,6 +279,12 @@ const ChatModal: React.FC<ChatModalProps> = ({ onClose }) => {
       });
     } finally {
       setIsLoading(false);
+      
+      
+
+      setTimeout(() => {
+        inputRef.current?.focus();
+      }, 100);
     }
   };
 
@@ -287,7 +293,7 @@ const ChatModal: React.FC<ChatModalProps> = ({ onClose }) => {
       <div className="bg-white rounded-lg w-[90%] sm:w-full max-w-md h-[90vh] sm:h-[700px] sm:max-h-[80vh] shadow-lg flex flex-col">
         {/* 헤더 */}
         <div className="p-4 border-b flex justify-between items-center">
-          <h3 className="text-lg font-semibold text-gray-900">채팅 상담</h3>
+          {/* <h3 className="text-lg font-semibold text-gray-900">채팅 상담</h3> */}
           <button
             onClick={onClose}
             className="text-gray-500 hover:text-gray-700"
