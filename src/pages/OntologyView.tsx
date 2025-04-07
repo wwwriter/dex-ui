@@ -10,10 +10,10 @@ import {
   metricObjectTypeRelationApi,
   // ontologyApi,
 } from "../api/dexApi";
-import GraphControls from "./GraphControls";
-import ZoomControls from "./ZoomControls";
-import NodeInfoModal from "./NodeInfoModal";
-import GraphLegend from "./GraphLegend";
+import OntologyControls from "./OntologyControls";
+import ZoomControls from "../components/ZoomControls";
+import NodeInfoModal from "../components/NodeInfoModal";
+// import OntologyLegend from "../components/OntologyLegend";
 import { addNodeHoverStyles, formatLabel } from "../utils/graphUtils";
 
 interface ObjectTypeGroup {
@@ -39,7 +39,7 @@ declare global {
   }
 }
 
-const GraphView = () => {
+const OntologyView = () => {
   const { ontology_id } = useParams<{ ontology_id: string }>();
   const containerRef = useRef<HTMLDivElement>(null);
 
@@ -72,41 +72,25 @@ const GraphView = () => {
   // get metric object type relation
   const { data: metricObjectTypeRelations = [] } = useQuery({
     queryKey: ["metricObjectTypeRelations", ontology_id],
-    queryFn: metricObjectTypeRelationApi.getAll,
-    select: (data) =>
-      ontology_id
-        ? data.filter((rel) => rel.ontology_id === Number(ontology_id))
-        : data,
+    queryFn: () => metricObjectTypeRelationApi.getAll(Number(ontology_id)),
   });
 
   // 객체 타입 데이터 가져오기
   const { data: objectTypes = [] } = useQuery({
     queryKey: ["objectTypes", ontology_id],
-    queryFn: objectTypeApi.getAll,
-    select: (data) =>
-      ontology_id
-        ? data.filter((obj) => obj.ontology_id === Number(ontology_id))
-        : data,
+    queryFn: () => objectTypeApi.getAll(Number(ontology_id)),
   });
 
   // 메트릭 데이터 가져오기
   const { data: metrics = [] } = useQuery({
     queryKey: ["metrics", ontology_id],
-    queryFn: metricApi.getAll,
-    select: (data) =>
-      ontology_id
-        ? data.filter((metric) => metric.ontology_id === Number(ontology_id))
-        : data,
+    queryFn: () => metricApi.getAll(Number(ontology_id)),
   });
 
   // 링크 타입 데이터 가져오기
   const { data: linkTypes = [] } = useQuery({
     queryKey: ["linkTypes", ontology_id],
-    queryFn: linkTypeApi.getAll,
-    select: (data) =>
-      ontology_id
-        ? data.filter((link) => link.ontology_id === Number(ontology_id))
-        : data,
+    queryFn: () => linkTypeApi.getAll(Number(ontology_id)),
   });
 
   // 노드 클릭 핸들러
@@ -135,7 +119,7 @@ const GraphView = () => {
     }
   };
 
-  // 그래프 코드 생성
+  // 온톨로지 코드 생성
   const mermaidCode = useMemo(() => {
     let code = "flowchart TD\n";
 
@@ -265,7 +249,7 @@ const GraphView = () => {
     selectedNodeId,
   ]);
 
-  // Mermaid 그래프 렌더링
+  // Mermaid 온톨로지 렌더링
   useEffect(() => {
     // 콜백 함수 등록
     window.callback = async function (nodeId: string) {
@@ -275,7 +259,7 @@ const GraphView = () => {
       return false; // 기본 동작 방지
     };
 
-    const renderGraph = async () => {
+    const renderOntology = async () => {
       try {
         if (!mermaidCode.trim()) {
           setSvgContent("<div>데이터가 없습니다.</div>");
@@ -297,7 +281,7 @@ const GraphView = () => {
           modifiedCode += `\nclick ${nodeId} "javascript:callback('${nodeId}')"\n`;
         });
         // 렌더링 실행
-        const { svg } = await mermaid.render("graph-div", modifiedCode);
+        const { svg } = await mermaid.render("ontology-div", modifiedCode);
         setSvgContent(svg);
 
         // SVG가 DOM에 추가된 후 스타일 적용을 위한 지연 실행
@@ -306,11 +290,11 @@ const GraphView = () => {
         }, 100);
       } catch (error) {
         console.error("Mermaid 렌더링 오류:", error);
-        setSvgContent("<div>그래프 렌더링 중 오류가 발생했습니다.</div>");
+        setSvgContent("<div>온톨로지 렌더링 중 오류가 발생했습니다.</div>");
       }
     };
 
-    renderGraph();
+    renderOntology();
   }, [mermaidCode, objectTypes, metrics]);
 
   // 줌 인 함수
@@ -440,16 +424,16 @@ const GraphView = () => {
   };
 
   return (
-    <div className="w-full h-full bg-gray-900">
-      {/* 그래프 컨트롤 */}
-      <GraphControls
+    <div className="w-full h-full bg-gray-900 relative pb-24 md:pb-0">
+      {/* 온톨로지 컨트롤 */}
+      <OntologyControls
         showGroups={showGroups}
         showMetrics={showMetrics}
         onToggleGroups={setShowGroups}
         onToggleMetrics={setShowMetrics}
       />
 
-      {/* 그래프 범례 */}
+      {/* 온톨로지 범례 */}
       {/* <GraphLegend selectedNodeId={selectedNodeId} /> */}
 
       {/* 줌 컨트롤 */}
@@ -500,11 +484,11 @@ const GraphView = () => {
           }}
         />
 
-        {/* 그래프가 렌더링되지 않는 경우 숨겨진 다이어그램 */}
+        {/* 온톨로지가 렌더링되지 않는 경우 숨겨진 다이어그램 */}
         {/* <div id="mermaid-flow">{mermaidCode}</div> */}
       </div>
     </div>
   );
 };
 
-export default GraphView;
+export default OntologyView;

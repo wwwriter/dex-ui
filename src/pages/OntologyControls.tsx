@@ -1,20 +1,24 @@
 import React from "react";
 
-interface GraphControlsProps {
+interface OntologyControlsProps {
   showGroups: boolean;
   showMetrics: boolean;
   onToggleGroups: (value: boolean) => void;
   onToggleMetrics: (value: boolean) => void;
 }
 
-const GraphControls: React.FC<GraphControlsProps> = ({
+const OntologyControls: React.FC<OntologyControlsProps> = ({
   showGroups,
   showMetrics,
   onToggleGroups,
   onToggleMetrics,
 }) => {
   return (
-    <div className="absolute top-20 right-4 z-10 bg-white/80 backdrop-blur-sm p-3 rounded-lg shadow-md">
+    <div
+      className="absolute z-10 bg-white/80 backdrop-blur-sm rounded-lg shadow-md
+                     left-4 top-4 md:right-4 md:bottom-auto md:left-auto
+                    p-2 md:p-3"
+    >
       <div className="flex flex-col space-y-2">
         {/* <label className="inline-flex items-center cursor-pointer">
           <input
@@ -43,4 +47,4 @@ const GraphControls: React.FC<GraphControlsProps> = ({
   );
 };
 
-export default GraphControls;
+export default OntologyControls;

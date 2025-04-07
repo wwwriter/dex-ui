@@ -26,15 +26,13 @@ const Home = () => {
   }
 
   return (
-    <div className="bg-white shadow rounded-lg p-6">
+    <div className="bg-white shadow rounded-lg p-4">
       <div className="mb-6">
         <h2 className="text-xl font-semibold text-gray-900">온톨로지 목록</h2>
         <p className="mt-1 text-sm text-gray-500">
           보려는 온톨로지 그래프를 선택하세요
         </p>
       </div>
-
-     
 
       {ontologies.length === 0 ? (
         <div className="text-center py-10 text-gray-500">
@@ -45,7 +43,7 @@ const Home = () => {
           {ontologies.map((ontology) => (
             <Link
               key={ontology.id}
-              to={`/graph/${ontology.id}`}
+              to={`/ontologies/${ontology.id}`}
               className="block p-4 bg-gray-50 hover:bg-gray-100 rounded-lg transition-colors duration-150"
             >
               <h3 className="font-medium text-gray-900">{ontology.name}</h3>

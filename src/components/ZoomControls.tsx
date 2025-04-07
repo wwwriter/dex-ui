@@ -16,11 +16,15 @@ const ZoomControls: React.FC<ZoomControlsProps> = ({
   onFitToScreen,
 }) => {
   return (
-    <div className="absolute bottom-4 right-4 z-10 bg-white/80 backdrop-blur-sm p-3 rounded-lg shadow-md">
-      <div className="flex items-center space-x-2">
+    <div
+      className="absolute z-10 bg-white/80 backdrop-blur-sm rounded-lg shadow-md
+                     right-4 top-6 md:left-4 md:bottom-auto md:right-auto
+                    p-2 md:p-3"
+    >
+      <div className="flex flex-row md:flex-row items-center space-x-2 md:space-x-2">
         <button
           onClick={onZoomOut}
-          className="p-2 bg-gray-100 rounded hover:bg-gray-200 focus:outline-none"
+          className="p-2.5 md:p-2 bg-gray-100 rounded hover:bg-gray-200 focus:outline-none"
           aria-label="축소"
         >
           <svg
@@ -45,7 +49,7 @@ const ZoomControls: React.FC<ZoomControlsProps> = ({
 
         <button
           onClick={onZoomIn}
-          className="p-2 bg-gray-100 rounded hover:bg-gray-200 focus:outline-none"
+          className="p-2.5 md:p-2 bg-gray-100 rounded hover:bg-gray-200 focus:outline-none"
           aria-label="확대"
         >
           <svg
@@ -66,7 +70,7 @@ const ZoomControls: React.FC<ZoomControlsProps> = ({
 
         <button
           onClick={onResetZoom}
-          className="p-2 bg-gray-100 rounded hover:bg-gray-200 focus:outline-none"
+          className="p-2.5 md:p-2 bg-gray-100 rounded hover:bg-gray-200 focus:outline-none"
           aria-label="줌 리셋"
         >
           <svg
@@ -87,7 +91,7 @@ const ZoomControls: React.FC<ZoomControlsProps> = ({
 
         <button
           onClick={onFitToScreen}
-          className="p-2 bg-gray-100 rounded hover:bg-gray-200 focus:outline-none"
+          className="p-2.5 md:p-2 bg-gray-100 rounded hover:bg-gray-200 focus:outline-none"
           aria-label="화면에 맞추기"
         >
           <svg

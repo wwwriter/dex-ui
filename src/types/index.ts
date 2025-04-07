@@ -49,3 +49,56 @@ export interface Ontology {
   updated_at: string;
   deleted_at: string | null;
 }
+
+export interface Knowledge {
+  id: number;
+  name: string;
+  label: string | null;
+  description: string | null;
+  mermaid: string | null;
+  link: string | null;
+  ontology_id: number | null;
+  created_at: string;
+  updated_at: string;
+  deleted_at: string | null;
+}
+
+export interface AuthResponse {
+  access_token: string;
+  id: string;
+}
+
+export interface Problem {
+  id: number;
+  name: string;
+  label: string | null;
+  description: string | null;
+  ontology_id: number | null;
+  created_at: string;
+  updated_at: string;
+  deleted_at: string | null;
+}
+
+export interface Property {
+  id: number;
+  name: string;
+  label: string | null;
+  description: string | null;
+  property_type: string;
+  config: any | null;
+  object_type_id: number | null;
+  ontology_id: number | null;
+  created_at: string;
+  updated_at: string;
+  deleted_at: string | null;
+}
+
+export interface ProblemMetric {
+  id: number;
+  problem_id: number;
+  metric_id: number;
+  ontology_id: number | null;
+  created_at: string;
+  updated_at: string;
+  deleted_at: string | null;
+}

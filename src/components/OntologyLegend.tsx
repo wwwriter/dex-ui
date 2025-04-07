@@ -4,9 +4,9 @@ interface GraphLegendProps {
   selectedNodeId: string | null;
 }
 
-const GraphLegend: React.FC<GraphLegendProps> = ({ selectedNodeId }) => {
+const OntologyLegend: React.FC<GraphLegendProps> = ({ selectedNodeId }) => {
   return (
-    <div className="absolute bottom-4 left-4 z-10 bg-white/80 backdrop-blur-sm p-3 rounded-lg shadow-md">
+    <div className="absolute top-4 right-4 z-10 bg-white/80 backdrop-blur-sm p-3 rounded-lg shadow-md">
       <div className="text-sm font-medium text-gray-900 mb-2">범례</div>
       <div className="space-y-2">
         <div className="flex items-center">
@@ -42,4 +42,4 @@ const GraphLegend: React.FC<GraphLegendProps> = ({ selectedNodeId }) => {
   );
 };
 
-export default GraphLegend;
+export default OntologyLegend;
