@@ -279,8 +279,6 @@ const ChatModal: React.FC<ChatModalProps> = ({ onClose }) => {
       });
     } finally {
       setIsLoading(false);
-      
-      
 
       setTimeout(() => {
         inputRef.current?.focus();

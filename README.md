@@ -6,11 +6,7 @@
 5. Metric : /ontologies/:ontology_id/metrics
 ```
 
-
 https://llana.soneuro-handmade.com/openapi.json
 
-
-
-
-
-### Prompt
+- [ ] youtube 요약 background
+- [ ] agent 연동

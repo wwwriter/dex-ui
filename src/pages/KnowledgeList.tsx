@@ -75,7 +75,7 @@ const KnowledgeCard = ({ knowledge }: KnowledgeCardProps) => {
 
   return (
     <Link
-      to={`/ontologies/${ontology_id}/knowlege/new`}
+      to={`/ontologies/${ontology_id}/knowlege/${knowledge.id}`}
       className="block bg-white rounded-lg shadow-md hover:shadow-lg transition-shadow p-4"
     >
       <div className="flex justify-between items-start mb-3">
