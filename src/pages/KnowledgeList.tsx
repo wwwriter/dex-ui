@@ -15,7 +15,7 @@ const KnowledgeList = () => {
     error,
   } = useQuery({
     queryKey: ["knowledge", ontology_id],
-    queryFn: () => knowledgeApi.getAll(Number(ontology_id)),
+    queryFn: () => knowledgeApi.getAll(Number(ontology_id), { limit: 40 }),
   });
 
   if (isLoading) {

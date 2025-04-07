@@ -51,6 +51,7 @@ interface YoutubeSummaryModalProps {
   defaultUrl: string;
   ontologyId?: string;
 }
+const BASE_URL = "https://data-api.soneuro-handmade.com";
 
 const YoutubeSummaryModal = ({
   isOpen,
@@ -60,9 +61,15 @@ const YoutubeSummaryModal = ({
 }: YoutubeSummaryModalProps) => {
   const [url, setUrl] = useState(defaultUrl);
 
-  const handleSubmit = () => {
-    // TODO: 여기에 URL 제출 로직 구현
-    console.log("제출된 URL:", url);
+  const handleSubmit = async () => {
+    await fetch(`${BASE_URL}/api/knowledge`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ url, ontology_id: ontologyId }),
+    });
+
     onClose();
   };
 

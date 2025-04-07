@@ -14,7 +14,7 @@ const MetricList = () => {
     error,
   } = useQuery({
     queryKey: ["metrics", ontology_id],
-    queryFn: () => metricApi.getAll(Number(ontology_id)),
+    queryFn: () => metricApi.getAll(Number(ontology_id), { limit: 40 }),
   });
 
   if (isLoading) {

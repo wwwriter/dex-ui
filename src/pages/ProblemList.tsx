@@ -14,7 +14,7 @@ const ProblemList = () => {
     error,
   } = useQuery({
     queryKey: ["problems", ontology_id],
-    queryFn: () => problemApi.getAll(Number(ontology_id)),
+    queryFn: () => problemApi.getAll(Number(ontology_id), { limit: 40 }),
   });
 
   if (isLoading) {

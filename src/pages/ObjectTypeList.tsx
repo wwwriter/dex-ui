@@ -14,7 +14,7 @@ const ObjectTypeList = () => {
     error,
   } = useQuery({
     queryKey: ["objectTypes", ontology_id],
-    queryFn: () => objectTypeApi.getAll(Number(ontology_id)),
+    queryFn: () => objectTypeApi.getAll(Number(ontology_id), { limit: 40 }),
   });
 
   if (isLoading) {
