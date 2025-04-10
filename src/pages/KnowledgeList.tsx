@@ -15,7 +15,11 @@ const KnowledgeList = () => {
     error,
   } = useQuery({
     queryKey: ["knowledge", ontology_id],
-    queryFn: () => knowledgeApi.getAll(Number(ontology_id), { limit: 40 }),
+    queryFn: () =>
+      knowledgeApi.getAll(Number(ontology_id), {
+        limit: 200,
+        sort: "updated_at.desc",
+      }),
   });
 
   if (isLoading) {
@@ -92,11 +96,11 @@ const KnowledgeCard = ({ knowledge }: KnowledgeCardProps) => {
         )}
       </div>
 
-      {knowledge.label && (
+      {/* {knowledge.label && (
         <div className="inline-block bg-green-100 text-green-800 text-xs px-2 py-1 rounded-full mb-3">
           {knowledge.label}
         </div>
-      )}
+      )} */}
 
       {knowledge.description && (
         <p className="text-gray-600 mb-4 line-clamp-3">
