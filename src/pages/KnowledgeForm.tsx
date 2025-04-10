@@ -158,8 +158,8 @@ const KnowledgeForm = ({
         onSubmit={handleSubmit}
         className="bg-white rounded-lg shadow-md p-4"
       >
-        <div className="flex flex-row gap-4 mb-4">
-          <div className="w-1/2 ">
+        <div className="flex flex-col lg:flex-row gap-4 mb-4">
+          <div className="w-full lg:w-1/2">
             <label
               htmlFor="name"
               className="block text-sm font-medium text-gray-700 mb-1"
@@ -176,7 +176,7 @@ const KnowledgeForm = ({
               className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500"
             />
           </div>
-          <div className="w-1/2">
+          <div className="w-full lg:w-1/2">
             <label
               htmlFor="link"
               className="block text-sm font-medium text-gray-700 mb-1"
@@ -212,46 +212,47 @@ const KnowledgeForm = ({
           />
         </div> */}
 
-        <div className="mb-4">
-          <label
-            htmlFor="description"
-            className="block text-sm font-medium text-gray-700 mb-1"
-          >
-            설명
-          </label>
-          <div data-color-mode="light">
-            <MDEditor
-              preview="preview"
-              value={formData.description || ""}
-              onChange={handleDescriptionChange}
-              height={400}
-            />
+        <div className="flex flex-col lg:flex-row gap-4">
+          <div className="w-full lg:w-1/2">
+            <label
+              htmlFor="description"
+              className="block text-sm font-medium text-gray-700 mb-1"
+            >
+              설명
+            </label>
+            <div data-color-mode="light">
+              <MDEditor
+                preview="preview"
+                value={formData.description || ""}
+                onChange={handleDescriptionChange}
+                height={600}
+              />
+            </div>
           </div>
-        </div>
-
-        <div className="mb-6">
-          <label
-            htmlFor="mermaid"
-            className="block text-sm font-medium text-gray-700 mb-1"
-          >
-            Mermaid 다이어그램
-          </label>
-          <textarea
-            id="mermaid"
-            name="mermaid"
-            value={formData.mermaid || ""}
-            onChange={handleChange}
-            rows={6}
-            placeholder="graph TD;
+          <div className="w-full lg:w-1/2">
+            <label
+              htmlFor="mermaid"
+              className="block text-sm font-medium text-gray-700 mb-1"
+            >
+              Mermaid 다이어그램
+            </label>
+            <textarea
+              id="mermaid"
+              name="mermaid"
+              value={formData.mermaid || ""}
+              onChange={handleChange}
+              rows={29}
+              placeholder="graph TD;
     A-->B;
     A-->C;
     B-->D;
     C-->D;"
-            className="w-full px-3 py-2 border border-gray-300 rounded-md font-mono text-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
-          />
-          <p className="mt-1 text-xs text-gray-500">
-            Mermaid 마크다운 형식으로 다이어그램을 작성하세요.
-          </p>
+              className="w-full px-3 py-2 border border-gray-300 rounded-md font-mono text-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+            />
+            <p className="mt-1 text-xs text-gray-500">
+              Mermaid 마크다운 형식으로 다이어그램을 작성하세요.
+            </p>
+          </div>
         </div>
 
         <div className="flex justify-end space-x-4">
