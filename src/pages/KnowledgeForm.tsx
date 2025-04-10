@@ -86,6 +86,44 @@ const KnowledgeForm = ({
     }
   };
 
+  const [isSummarizing, setIsSummarizing] = useState(false);
+
+  const handleSummarize = async () => {
+    if (!formData.name || !formData.description || !id) return;
+
+    setIsSummarizing(true);
+    try {
+      const response = await fetch(
+        `https://data-api.soneuro-handmade.com/api/knowledge/${id}`,
+        {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            title: formData.name,
+            content: formData.description,
+          }),
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error("요약 생성에 실패했습니다");
+      }
+
+      const result = await response.json();
+      setFormData((prev) => ({
+        ...prev,
+        description: result.summary || prev.description,
+      }));
+    } catch (error) {
+      console.error("요약 생성 중 오류 발생:", error);
+      alert("요약 생성 중 오류가 발생했습니다.");
+    } finally {
+      setIsSummarizing(false);
+    }
+  };
+
   if (isEditing && isLoadingKnowledge) {
     return <div className="text-center py-10">데이터를 불러오는 중...</div>;
   }
@@ -100,9 +138,21 @@ const KnowledgeForm = ({
 
   return (
     <div className="container mx-auto p-4">
-      <h2 className="text-2xl font-semibold text-gray-900 mb-6">
-        {isEditing ? "지식 편집" : "새 지식 생성"}
-      </h2>
+      <div className="flex justify-between items-center mb-6">
+        <h2 className="text-2xl font-semibold text-gray-900">
+          {isEditing ? "지식 편집" : "새 지식 생성"}
+        </h2>
+        {isEditing && (
+          <button
+            type="button"
+            onClick={handleSummarize}
+            disabled={isSummarizing}
+            className="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 disabled:bg-green-300"
+          >
+            {isSummarizing ? "요약 중..." : "요약하기"}
+          </button>
+        )}
+      </div>
 
       <form
         onSubmit={handleSubmit}
@@ -171,6 +221,7 @@ const KnowledgeForm = ({
           </label>
           <div data-color-mode="light">
             <MDEditor
+              preview="preview"
               value={formData.description || ""}
               onChange={handleDescriptionChange}
               height={400}
