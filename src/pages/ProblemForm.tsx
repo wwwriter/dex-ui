@@ -4,6 +4,7 @@ import { useQuery } from "@tanstack/react-query";
 import { Problem } from "../types";
 import { problemApi } from "../api/dexApi";
 import MDEditor from "@uiw/react-md-editor";
+import { createDetailQueryKey } from "../api/query-keys";
 
 interface ProblemFormProps {
   initialData?: Problem;
@@ -28,7 +29,7 @@ const ProblemForm = ({ initialData, isEditing = false }: ProblemFormProps) => {
     isLoading: isLoadingProblem,
     error: problemError,
   } = useQuery({
-    queryKey: ["problem", id],
+    queryKey: createDetailQueryKey("problems", Number(id)),
     queryFn: () => problemApi.getById(Number(id)),
     enabled: isEditing && !!id,
   });

@@ -44,7 +44,7 @@ export interface LinkType {
 export interface Ontology {
   id: number;
   name: string;
-  description: string | null;
+  description?: string;
   created_at: string;
   updated_at: string;
   deleted_at: string | null;
@@ -55,6 +55,7 @@ export interface Knowledge {
   name: string;
   label: string | null;
   description: string | null;
+  summary: string | null;
   mermaid: string | null;
   link: string | null;
   ontology_id: number | null;

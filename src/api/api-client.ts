@@ -1,6 +1,5 @@
+import { BASE_URL } from "./config";
 // API 클라이언트 설정
-const API_BASE_URL =
-  import.meta.env.VITE_API_BASE_URL || "http://localhost:8000";
 
 // 오프라인 상태를 감지하는 함수
 const isOffline = () => !navigator.onLine;
@@ -41,7 +40,7 @@ export const apiRequest = async (
   endpoint: string,
   options: RequestInit = {}
 ) => {
-  const url = `${API_BASE_URL}${endpoint}`;
+  const url = `${BASE_URL}${endpoint}`;
   const cacheKey = `${options.method || "GET"}-${endpoint}`;
 
   // 오프라인 상태 확인

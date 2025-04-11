@@ -1,11 +1,14 @@
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Link, useParams } from "react-router-dom";
 import { objectTypeApi } from "../api/dexApi";
 import { ObjectType } from "../types";
 import { FiPlus, FiLayers } from "react-icons/fi";
+import { createListQueryKey } from "../api/query-keys";
+import DropdownMenu from "../components/DropdownMenu";
 
 const ObjectTypeList = () => {
   const { ontology_id } = useParams<{ ontology_id: string }>();
+  const queryClient = useQueryClient();
 
   // 현재 온톨로지에 해당하는 객체 타입만 가져오기
   const {
@@ -13,9 +16,25 @@ const ObjectTypeList = () => {
     isLoading,
     error,
   } = useQuery({
-    queryKey: ["objectTypes", ontology_id],
+    queryKey: createListQueryKey("objectTypes", {
+      limit: 40,
+      filters: { ontology_id: Number(ontology_id) },
+    }),
     queryFn: () => objectTypeApi.getAll(Number(ontology_id), { limit: 40 }),
   });
+
+  const deleteMutation = useMutation({
+    mutationFn: (id: number) => objectTypeApi.delete(id),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["objectTypes", ontology_id] });
+    },
+  });
+
+  const handleDelete = (id: number) => {
+    if (window.confirm("정말로 이 객체 타입을 삭제하시겠습니까?")) {
+      deleteMutation.mutate(id);
+    }
+  };
 
   if (isLoading) {
     return <div className="text-center py-10">데이터를 불러오는 중...</div>;
@@ -54,7 +73,12 @@ const ObjectTypeList = () => {
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {objectTypes.map((objectType) => (
-            <ObjectTypeCard key={objectType.id} objectType={objectType} />
+            <div key={objectType.id} className="relative">
+              <div className="absolute top-4 right-4">
+                <DropdownMenu onDelete={() => handleDelete(objectType.id)} />
+              </div>
+              <ObjectTypeCard objectType={objectType} />
+            </div>
           ))}
         </div>
       )}

@@ -4,11 +4,17 @@ import { useQuery } from "@tanstack/react-query";
 import { Knowledge } from "../types";
 import { knowledgeApi } from "../api/dexApi";
 import MDEditor from "@uiw/react-md-editor";
+import { createDetailQueryKey } from "../api/query-keys";
+import { ChevronDownIcon, ChevronUpIcon } from "@heroicons/react/24/outline";
 
 interface KnowledgeFormProps {
   initialData?: Knowledge;
   isEditing?: boolean;
 }
+
+const removeThinkTags = (text: string): string => {
+  return text.replace(/<think>[\s\S]*?<\/think>/g, "");
+};
 
 const KnowledgeForm = ({
   initialData,
@@ -16,11 +22,13 @@ const KnowledgeForm = ({
 }: KnowledgeFormProps) => {
   const { ontology_id } = useParams<{ ontology_id: string }>();
   const navigate = useNavigate();
+  const [isDescriptionOpen, setIsDescriptionOpen] = useState(false);
 
   const [formData, setFormData] = useState<Partial<Knowledge>>({
     name: "",
     label: "",
     description: "",
+    summary: "",
     mermaid: "",
     link: "",
     ontology_id: Number(ontology_id),
@@ -33,7 +41,7 @@ const KnowledgeForm = ({
     isLoading: isLoadingKnowledge,
     error: knowledgeError,
   } = useQuery({
-    queryKey: ["knowledge", id],
+    queryKey: createDetailQueryKey("knowledge", Number(id)),
     queryFn: () => knowledgeApi.getById(Number(id)),
     enabled: isEditing && !!id,
   });
@@ -46,6 +54,7 @@ const KnowledgeForm = ({
         label: knowledgeData.label,
         description: knowledgeData.description,
         mermaid: knowledgeData.mermaid,
+        summary: knowledgeData.summary,
         link: knowledgeData.link,
         ontology_id: knowledgeData.ontology_id,
       });
@@ -195,35 +204,46 @@ const KnowledgeForm = ({
           </div>
         </div>
 
-        {/* <div className="mb-4">
-          <label
-            htmlFor="label"
-            className="block text-sm font-medium text-gray-700 mb-1"
+        <div className="mb-4">
+          <button
+            type="button"
+            onClick={() => setIsDescriptionOpen(!isDescriptionOpen)}
+            className="flex items-center justify-between w-full px-4 py-2 text-left bg-gray-50 rounded-md hover:bg-gray-100"
           >
-            레이블
-          </label>
-          <input
-            type="text"
-            id="label"
-            name="label"
-            value={formData.label || ""}
-            onChange={handleChange}
-            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500"
-          />
-        </div> */}
+            <span className="text-sm font-medium text-gray-700">설명</span>
+            {isDescriptionOpen ? (
+              <ChevronUpIcon className="w-5 h-5 text-gray-500" />
+            ) : (
+              <ChevronDownIcon className="w-5 h-5 text-gray-500" />
+            )}
+          </button>
+          {isDescriptionOpen && (
+            <div className="mt-2">
+              <textarea
+                id="description"
+                name="description"
+                value={formData.description || ""}
+                onChange={handleChange}
+                rows={6}
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                placeholder="지식에 대한 상세 설명을 입력하세요"
+              />
+            </div>
+          )}
+        </div>
 
         <div className="flex flex-col lg:flex-row gap-4">
           <div className="w-full lg:w-1/2">
             <label
-              htmlFor="description"
+              htmlFor="summary"
               className="block text-sm font-medium text-gray-700 mb-1"
             >
-              설명
+              요약
             </label>
             <div data-color-mode="light">
               <MDEditor
                 preview="preview"
-                value={formData.description || ""}
+                value={removeThinkTags(formData.summary || "")}
                 onChange={handleDescriptionChange}
                 height={600}
               />

@@ -9,16 +9,18 @@ import {
   Property,
   ProblemMetric,
 } from "../types";
+import axiosInstance from "./axios";
+import { BASE_URL } from "./config";
 
-const BASE_URL = "https://llana.soneuro-handmade.com";
-
-interface ApiRequest {
+export interface DetailApiRequest {
+  fields?: string;
+  relations?: string;
+}
+export interface ApiRequest extends DetailApiRequest {
   limit?: number;
   offset?: number;
   page?: number;
   sort?: string;
-  fields?: string;
-  relations?: string;
   filters?: Record<string, any>;
 }
 
@@ -80,54 +82,39 @@ export const objectTypeApi = {
     ontology_id?: number,
     params?: ApiRequest
   ): Promise<ObjectType[]> => {
-    let url = `${BASE_URL}/object_types/?ontology_id=${ontology_id}`;
+    let url = `/object_types/?ontology_id=${ontology_id}`;
     const queryParams = buildQueryParams(params);
 
     if (queryParams) {
       url += `&${queryParams}`;
     }
 
-    const response = await fetch(url);
-    const result: ApiResponse<ObjectType> = await response.json();
-    return result.data;
+    const response = await axiosInstance.get(url);
+    return response.data.data;
   },
 
   getById: async (id: number): Promise<ObjectType> => {
-    const response = await fetch(`${BASE_URL}/object_types/${id}`);
-    return response.json();
+    const response = await axiosInstance.get(`/object_types/${id}`);
+    return response.data;
   },
 
   create: async (
     data: Omit<ObjectType, "id" | "created_at" | "updated_at">
   ): Promise<ObjectType> => {
-    const response = await fetch(`${BASE_URL}/object_types/`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(data),
-    });
-    return response.json();
+    const response = await axiosInstance.post(`/object_types/`, data);
+    return response.data;
   },
 
   update: async (
     id: number,
     data: Partial<Omit<ObjectType, "id" | "created_at" | "updated_at">>
   ): Promise<ObjectType> => {
-    const response = await fetch(`${BASE_URL}/object_types/${id}`, {
-      method: "PUT",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(data),
-    });
-    return response.json();
+    const response = await axiosInstance.put(`/object_types/${id}`, data);
+    return response.data;
   },
 
   delete: async (id: number): Promise<void> => {
-    await fetch(`${BASE_URL}/object_types/${id}`, {
-      method: "DELETE",
-    });
+    await axiosInstance.delete(`/object_types/${id}`);
   },
 };
 
@@ -137,54 +124,39 @@ export const metricApi = {
     ontology_id?: number,
     params?: ApiRequest
   ): Promise<Metric[]> => {
-    let url = `${BASE_URL}/metrics/?ontology_id=${ontology_id}`;
+    let url = `/metrics/?ontology_id=${ontology_id}`;
     const queryParams = buildQueryParams(params);
 
     if (queryParams) {
       url += `&${queryParams}`;
     }
 
-    const response = await fetch(url);
-    const result: ApiResponse<Metric> = await response.json();
-    return result.data;
+    const response = await axiosInstance.get(url);
+    return response.data.data;
   },
 
   getById: async (id: number): Promise<Metric> => {
-    const response = await fetch(`${BASE_URL}/metrics/${id}`);
-    return response.json();
+    const response = await axiosInstance.get(`/metrics/${id}`);
+    return response.data;
   },
 
   create: async (
     data: Omit<Metric, "id" | "created_at" | "updated_at">
   ): Promise<Metric> => {
-    const response = await fetch(`${BASE_URL}/metrics`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(data),
-    });
-    return response.json();
+    const response = await axiosInstance.post(`/metrics`, data);
+    return response.data;
   },
 
   update: async (
     id: number,
     data: Partial<Omit<Metric, "id" | "created_at" | "updated_at">>
   ): Promise<Metric> => {
-    const response = await fetch(`${BASE_URL}/metrics/${id}`, {
-      method: "PUT",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(data),
-    });
-    return response.json();
+    const response = await axiosInstance.put(`/metrics/${id}`, data);
+    return response.data;
   },
 
   delete: async (id: number): Promise<void> => {
-    await fetch(`${BASE_URL}/metrics/${id}`, {
-      method: "DELETE",
-    });
+    await axiosInstance.delete(`/metrics/${id}`);
   },
 };
 
@@ -194,82 +166,60 @@ export const linkTypeApi = {
     ontology_id?: number,
     params?: ApiRequest
   ): Promise<LinkType[]> => {
-    let url = `${BASE_URL}/link_types/?ontology_id=${ontology_id}`;
+    let url = `/link_types/?ontology_id=${ontology_id}`;
     const queryParams = buildQueryParams(params);
 
     if (queryParams) {
       url += `&${queryParams}`;
     }
 
-    const response = await fetch(url);
-    const result: ApiResponse<LinkType> = await response.json();
-    return result.data;
+    const response = await axiosInstance.get(url);
+    return response.data.data;
   },
 
   getById: async (id: number): Promise<LinkType> => {
-    const response = await fetch(`${BASE_URL}/link_types/${id}`);
-    return response.json();
+    const response = await axiosInstance.get(`/link_types/${id}`);
+    return response.data;
   },
 
   create: async (
     data: Omit<LinkType, "id" | "created_at" | "updated_at">
   ): Promise<LinkType> => {
-    const response = await fetch(`${BASE_URL}/link_types/`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(data),
-    });
-    return response.json();
+    const response = await axiosInstance.post(`/link_types/`, data);
+    return response.data;
   },
 
   update: async (
     id: number,
     data: Partial<Omit<LinkType, "id" | "created_at" | "updated_at">>
   ): Promise<LinkType> => {
-    const response = await fetch(`${BASE_URL}/link_types/${id}`, {
-      method: "PUT",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(data),
-    });
-    return response.json();
+    const response = await axiosInstance.put(`/link_types/${id}`, data);
+    return response.data;
   },
 
   delete: async (id: number): Promise<void> => {
-    await fetch(`${BASE_URL}/link_types/${id}`, {
-      method: "DELETE",
-    });
+    await axiosInstance.delete(`/link_types/${id}`);
   },
 };
 
 // Ontology API 함수
 export const ontologyApi = {
   getAll: async (params?: ApiRequest): Promise<Ontology[]> => {
-    const url = `${BASE_URL}/ontologies/${buildQueryParams(params)}`;
-    const response = await fetch(url);
-    const result: ApiResponse<Ontology> = await response.json();
-    return result.data;
+    const url = `/ontologies/${buildQueryParams(params)}`;
+    const response = await axiosInstance.get(url);
+    return response.data.data;
   },
 
   getById: async (id: number): Promise<Ontology> => {
-    const response = await fetch(`${BASE_URL}/ontologies/${id}`);
-    return response.json();
+    const response = await axiosInstance.get(`/ontologies/${id}`);
+    return response.data;
   },
 
   create: async (
     data: Omit<Ontology, "id" | "created_at" | "updated_at" | "deleted_at">
   ): Promise<Ontology> => {
-    const response = await fetch(`${BASE_URL}/ontologies/`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(data),
-    });
-    return response.json();
+    const response = await axiosInstance.post(`/ontologies/`, data);
+    return response.data;
   },
 
   update: async (
@@ -278,20 +228,12 @@ export const ontologyApi = {
       Omit<Ontology, "id" | "created_at" | "updated_at" | "deleted_at">
     >
   ): Promise<Ontology> => {
-    const response = await fetch(`${BASE_URL}/ontologies/${id}`, {
-      method: "PUT",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(data),
-    });
-    return response.json();
+    const response = await axiosInstance.put(`/ontologies/${id}`, data);
+    return response.data;
   },
 
   delete: async (id: number): Promise<void> => {
-    await fetch(`${BASE_URL}/ontologies/${id}`, {
-      method: "DELETE",
-    });
+    await axiosInstance.delete(`/ontologies/${id}`);
   },
 };
 
@@ -301,36 +243,32 @@ export const metricObjectTypeRelationApi = {
     ontology_id?: number,
     params?: ApiRequest
   ): Promise<MetricObjectTypeRelation[]> => {
-    let url = `${BASE_URL}/metric_object_type_relation/?ontology_id=${ontology_id}`;
+    let url = `/metric_object_type_relation/?ontology_id=${ontology_id}`;
     const queryParams = buildQueryParams(params);
 
     if (queryParams) {
       url += `&${queryParams}`;
     }
 
-    const response = await fetch(url);
-    const result: ApiResponse<MetricObjectTypeRelation> = await response.json();
-    return result.data;
+    const response = await axiosInstance.get(url);
+    return response.data.data;
   },
 
   getById: async (id: number): Promise<MetricObjectTypeRelation> => {
-    const response = await fetch(
-      `${BASE_URL}/metric_object_type_relation/${id}`
+    const response = await axiosInstance.get(
+      `/metric_object_type_relation/${id}`
     );
-    return response.json();
+    return response.data;
   },
 
   create: async (
     data: Omit<MetricObjectTypeRelation, "id" | "created_at" | "updated_at">
   ): Promise<MetricObjectTypeRelation> => {
-    const response = await fetch(`${BASE_URL}/metric_object_type_relation/`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(data),
-    });
-    return response.json();
+    const response = await axiosInstance.post(
+      `/metric_object_type_relation/`,
+      data
+    );
+    return response.data;
   },
 
   update: async (
@@ -339,37 +277,26 @@ export const metricObjectTypeRelationApi = {
       Omit<MetricObjectTypeRelation, "id" | "created_at" | "updated_at">
     >
   ): Promise<MetricObjectTypeRelation> => {
-    const response = await fetch(
-      `${BASE_URL}/metric_object_type_relation/${id}`,
-      {
-        method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(data),
-      }
+    const response = await axiosInstance.put(
+      `/metric_object_type_relation/${id}`,
+      data
     );
-    return response.json();
+    return response.data;
   },
 
   delete: async (id: number): Promise<void> => {
-    await fetch(`${BASE_URL}/metric_object_type_relation/${id}`, {
-      method: "DELETE",
-    });
+    await axiosInstance.delete(`/metric_object_type_relation/${id}`);
   },
 };
 
 // Authentication API 함수
 export const authApi = {
   login: async (username: string, password: string): Promise<AuthResponse> => {
-    const response = await fetch(`${BASE_URL}/auth/login`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({ username, password }),
+    const response = await axiosInstance.post(`/auth/login`, {
+      username,
+      password,
     });
-    return response.json();
+    return response.data;
   },
 };
 
@@ -379,7 +306,7 @@ export const knowledgeApi = {
     ontology_id?: number,
     params?: ApiRequest
   ): Promise<Knowledge[]> => {
-    let url = `${BASE_URL}/knowledge/?ontology_id=${ontology_id}`;
+    let url = `/knowledge/?ontology_id=${ontology_id}`;
     const queryParams = buildQueryParams(params);
     console.log(queryParams);
 
@@ -387,27 +314,20 @@ export const knowledgeApi = {
       url += `&${queryParams}`;
     }
 
-    const response = await fetch(url);
-    const result: ApiResponse<Knowledge> = await response.json();
-    return result.data;
+    const response = await axiosInstance.get(url);
+    return response.data.data;
   },
 
   getById: async (id: number): Promise<Knowledge> => {
-    const response = await fetch(`${BASE_URL}/knowledge/${id}`);
-    return response.json();
+    const response = await axiosInstance.get(`/knowledge/${id}`);
+    return response.data;
   },
 
   create: async (
     data: Omit<Knowledge, "id" | "created_at" | "updated_at" | "deleted_at">
   ): Promise<Knowledge> => {
-    const response = await fetch(`${BASE_URL}/knowledge/`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(data),
-    });
-    return response.json();
+    const response = await axiosInstance.post(`/knowledge/`, data);
+    return response.data;
   },
 
   update: async (
@@ -416,20 +336,12 @@ export const knowledgeApi = {
       Omit<Knowledge, "id" | "created_at" | "updated_at" | "deleted_at">
     >
   ): Promise<Knowledge> => {
-    const response = await fetch(`${BASE_URL}/knowledge/${id}`, {
-      method: "PUT",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(data),
-    });
-    return response.json();
+    const response = await axiosInstance.put(`/knowledge/${id}`, data);
+    return response.data;
   },
 
   delete: async (id: number): Promise<void> => {
-    await fetch(`${BASE_URL}/knowledge/${id}`, {
-      method: "DELETE",
-    });
+    await axiosInstance.delete(`/knowledge/${id}`);
   },
 };
 
@@ -439,34 +351,27 @@ export const problemApi = {
     ontology_id?: number,
     params?: ApiRequest
   ): Promise<Problem[]> => {
-    let url = `${BASE_URL}/problems/?ontology_id=${ontology_id}`;
+    let url = `/problems/?ontology_id=${ontology_id}`;
     const queryParams = buildQueryParams(params);
 
     if (queryParams) {
       url += `&${queryParams}`;
     }
 
-    const response = await fetch(url);
-    const result: ApiResponse<Problem> = await response.json();
-    return result.data;
+    const response = await axiosInstance.get(url);
+    return response.data.data;
   },
 
   getById: async (id: number): Promise<Problem> => {
-    const response = await fetch(`${BASE_URL}/problems/${id}`);
-    return response.json();
+    const response = await axiosInstance.get(`/problems/${id}`);
+    return response.data;
   },
 
   create: async (
     data: Omit<Problem, "id" | "created_at" | "updated_at" | "deleted_at">
   ): Promise<Problem> => {
-    const response = await fetch(`${BASE_URL}/problems/`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(data),
-    });
-    return response.json();
+    const response = await axiosInstance.post(`/problems/`, data);
+    return response.data;
   },
 
   update: async (
@@ -475,20 +380,12 @@ export const problemApi = {
       Omit<Problem, "id" | "created_at" | "updated_at" | "deleted_at">
     >
   ): Promise<Problem> => {
-    const response = await fetch(`${BASE_URL}/problems/${id}`, {
-      method: "PUT",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(data),
-    });
-    return response.json();
+    const response = await axiosInstance.put(`/problems/${id}`, data);
+    return response.data;
   },
 
   delete: async (id: number): Promise<void> => {
-    await fetch(`${BASE_URL}/problems/${id}`, {
-      method: "DELETE",
-    });
+    await axiosInstance.delete(`/problems/${id}`);
   },
 };
 
@@ -498,34 +395,27 @@ export const propertyApi = {
     ontology_id?: number,
     params?: ApiRequest
   ): Promise<Property[]> => {
-    let url = `${BASE_URL}/properties/?ontology_id=${ontology_id}`;
+    let url = `/properties/?ontology_id=${ontology_id}`;
     const queryParams = buildQueryParams(params);
 
     if (queryParams) {
       url += `&${queryParams}`;
     }
 
-    const response = await fetch(url);
-    const result: ApiResponse<Property> = await response.json();
-    return result.data;
+    const response = await axiosInstance.get(url);
+    return response.data.data;
   },
 
   getById: async (id: number): Promise<Property> => {
-    const response = await fetch(`${BASE_URL}/properties/${id}`);
-    return response.json();
+    const response = await axiosInstance.get(`/properties/${id}`);
+    return response.data;
   },
 
   create: async (
     data: Omit<Property, "id" | "created_at" | "updated_at" | "deleted_at">
   ): Promise<Property> => {
-    const response = await fetch(`${BASE_URL}/properties/`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(data),
-    });
-    return response.json();
+    const response = await axiosInstance.post(`/properties/`, data);
+    return response.data;
   },
 
   update: async (
@@ -534,20 +424,12 @@ export const propertyApi = {
       Omit<Property, "id" | "created_at" | "updated_at" | "deleted_at">
     >
   ): Promise<Property> => {
-    const response = await fetch(`${BASE_URL}/properties/${id}`, {
-      method: "PUT",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(data),
-    });
-    return response.json();
+    const response = await axiosInstance.put(`/properties/${id}`, data);
+    return response.data;
   },
 
   delete: async (id: number): Promise<void> => {
-    await fetch(`${BASE_URL}/properties/${id}`, {
-      method: "DELETE",
-    });
+    await axiosInstance.delete(`/properties/${id}`);
   },
 };
 
@@ -557,34 +439,27 @@ export const problemMetricApi = {
     ontology_id?: number,
     params?: ApiRequest
   ): Promise<ProblemMetric[]> => {
-    let url = `${BASE_URL}/problem_metrics/?ontology_id=${ontology_id}`;
+    let url = `/problem_metrics/?ontology_id=${ontology_id}`;
     const queryParams = buildQueryParams(params);
 
     if (queryParams) {
       url += `&${queryParams}`;
     }
 
-    const response = await fetch(url);
-    const result: ApiResponse<ProblemMetric> = await response.json();
-    return result.data;
+    const response = await axiosInstance.get(url);
+    return response.data.data;
   },
 
   getById: async (id: number): Promise<ProblemMetric> => {
-    const response = await fetch(`${BASE_URL}/problem_metrics/${id}`);
-    return response.json();
+    const response = await axiosInstance.get(`/problem_metrics/${id}`);
+    return response.data;
   },
 
   create: async (
     data: Omit<ProblemMetric, "id" | "created_at" | "updated_at" | "deleted_at">
   ): Promise<ProblemMetric> => {
-    const response = await fetch(`${BASE_URL}/problem_metrics/`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(data),
-    });
-    return response.json();
+    const response = await axiosInstance.post(`/problem_metrics/`, data);
+    return response.data;
   },
 
   update: async (
@@ -593,19 +468,11 @@ export const problemMetricApi = {
       Omit<ProblemMetric, "id" | "created_at" | "updated_at" | "deleted_at">
     >
   ): Promise<ProblemMetric> => {
-    const response = await fetch(`${BASE_URL}/problem_metrics/${id}`, {
-      method: "PUT",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(data),
-    });
-    return response.json();
+    const response = await axiosInstance.put(`/problem_metrics/${id}`, data);
+    return response.data;
   },
 
   delete: async (id: number): Promise<void> => {
-    await fetch(`${BASE_URL}/problem_metrics/${id}`, {
-      method: "DELETE",
-    });
+    await axiosInstance.delete(`/problem_metrics/${id}`);
   },
 };

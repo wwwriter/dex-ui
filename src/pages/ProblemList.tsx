@@ -1,92 +1,196 @@
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Link, useParams } from "react-router-dom";
 import { problemApi } from "../api/dexApi";
 import { Problem } from "../types";
 import { FiPlus } from "react-icons/fi";
+import DropdownMenu from "../components/DropdownMenu";
+import { useState } from "react";
 
 const ProblemList = () => {
   const { ontology_id } = useParams<{ ontology_id: string }>();
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [editingProblem, setEditingProblem] = useState<Problem | null>(null);
+  const [formData, setFormData] = useState({
+    name: "",
+    description: "",
+  });
+  const queryClient = useQueryClient();
 
-  // 현재 온톨로지에 해당하는 문제만 가져오기
-  const {
-    data: problems = [],
-    isLoading,
-    error,
-  } = useQuery({
+  const { data: problems = [], isLoading } = useQuery({
     queryKey: ["problems", ontology_id],
-    queryFn: () => problemApi.getAll(Number(ontology_id), { limit: 40 }),
+    queryFn: () => problemApi.getAll(Number(ontology_id)),
   });
 
-  if (isLoading) {
-    return <div className="text-center py-10">데이터를 불러오는 중...</div>;
-  }
+  const createMutation = useMutation({
+    mutationFn: (data: Problem) => problemApi.create(data as Problem),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["problems", ontology_id] });
+      setIsModalOpen(false);
+      setFormData({ name: "", description: "" });
+    },
+  });
 
-  if (error) {
-    return (
-      <div className="text-center py-10 text-red-600">
-        오류가 발생했습니다: {String(error)}
-      </div>
-    );
-  }
+  const updateMutation = useMutation({
+    mutationFn: (data: Problem) =>
+      problemApi.update(data.id, {
+        name: data.name,
+        description: data.description,
+      }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["problems", ontology_id] });
+      setIsModalOpen(false);
+      setEditingProblem(null);
+      setFormData({ name: "", description: "" });
+    },
+  });
+
+  const deleteMutation = useMutation({
+    mutationFn: (id: number) => problemApi.delete(id),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["problems", ontology_id] });
+    },
+  });
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (editingProblem) {
+      updateMutation.mutate({
+        id: editingProblem.id,
+        ontology_id: Number(ontology_id),
+        ...formData,
+      } as Problem);
+    } else {
+      createMutation.mutate({
+        ...formData,
+        ontology_id: Number(ontology_id),
+      } as Problem);
+    }
+  };
+
+  const handleEdit = (problem: Problem) => {
+    setEditingProblem(problem);
+    setFormData({
+      name: problem.name,
+      description: problem.description || "",
+    });
+    setIsModalOpen(true);
+  };
+
+  const handleDelete = (id: number) => {
+    if (window.confirm("정말로 이 문제를 삭제하시겠습니까?")) {
+      deleteMutation.mutate(id);
+    }
+  };
+
+  if (isLoading) return <div>로딩 중...</div>;
 
   return (
-    <div className="container mx-auto p-4">
+    <div className="p-4">
       <div className="flex justify-between items-center mb-6">
-        <h2 className="text-2xl font-semibold text-gray-900">문제 목록</h2>
-        <Link
-          to={`/ontologies/${ontology_id}/problems/new`}
-          className="flex items-center bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors"
+        <h1 className="text-2xl font-bold text-gray-900">문제 목록</h1>
+        <button
+          onClick={() => setIsModalOpen(true)}
+          className="flex items-center gap-2 bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors"
         >
-          <FiPlus className="mr-2" />새 문제 추가
-        </Link>
+          <FiPlus />새 문제 추가
+        </button>
       </div>
 
-      {problems.length === 0 ? (
-        <div className="text-center py-10 bg-white rounded-lg shadow-md">
-          <p className="text-gray-500">표시할 문제가 없습니다.</p>
-          <Link
-            to={`/ontologies/${ontology_id}/problems/new`}
-            className="inline-block mt-4 text-blue-600 hover:underline"
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        {problems.map((problem) => (
+          <div
+            key={problem.id}
+            className="bg-white p-6 rounded-lg shadow hover:shadow-md transition-shadow relative"
           >
-            첫 번째 문제 추가하기
-          </Link>
-        </div>
-      ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {problems.map((problem) => (
-            <ProblemCard key={problem.id} problem={problem} />
-          ))}
+            <div className="absolute top-4 right-4">
+              <DropdownMenu
+                // onEdit={() => handleEdit(problem)}
+                onDelete={() => handleDelete(problem.id)}
+              />
+            </div>
+            <Link to={`/ontologies/${ontology_id}/problems/${problem.id}`}>
+              <h2 className="text-xl font-semibold text-gray-900 max-w-[290px]">
+                {problem.name}
+              </h2>
+              <p className="mt-2 text-gray-600">{problem.description}</p>
+            </Link>
+          </div>
+        ))}
+      </div>
+
+      {/* 모달 */}
+      {isModalOpen && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center">
+          <div className="bg-white rounded-lg p-6 w-full max-w-md">
+            <h2 className="text-xl font-semibold mb-4">
+              {editingProblem ? "문제 수정" : "새 문제 추가"}
+            </h2>
+            <form onSubmit={handleSubmit}>
+              <div className="mb-4">
+                <label
+                  htmlFor="name"
+                  className="block text-sm font-medium text-gray-700 mb-1"
+                >
+                  이름
+                </label>
+                <input
+                  type="text"
+                  id="name"
+                  value={formData.name}
+                  onChange={(e) =>
+                    setFormData({ ...formData, name: e.target.value })
+                  }
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  required
+                />
+              </div>
+              <div className="mb-6">
+                <label
+                  htmlFor="description"
+                  className="block text-sm font-medium text-gray-700 mb-1"
+                >
+                  설명
+                </label>
+                <textarea
+                  id="description"
+                  value={formData.description}
+                  onChange={(e) =>
+                    setFormData({ ...formData, description: e.target.value })
+                  }
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  rows={3}
+                  required
+                />
+              </div>
+              <div className="flex justify-end gap-2">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setIsModalOpen(false);
+                    setEditingProblem(null);
+                    setFormData({ name: "", description: "" });
+                  }}
+                  className="px-4 py-2 text-gray-700 border border-gray-300 rounded-md hover:bg-gray-50"
+                >
+                  취소
+                </button>
+                <button
+                  type="submit"
+                  className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
+                  disabled={
+                    createMutation.isPending || updateMutation.isPending
+                  }
+                >
+                  {createMutation.isPending || updateMutation.isPending
+                    ? "저장 중..."
+                    : "저장"}
+                </button>
+              </div>
+            </form>
+          </div>
         </div>
       )}
     </div>
-  );
-};
-
-interface ProblemCardProps {
-  problem: Problem;
-}
-
-const ProblemCard = ({ problem }: ProblemCardProps) => {
-  const { ontology_id } = useParams<{ ontology_id: string }>();
-
-  return (
-    <Link
-      to={`/ontologies/${ontology_id}/problems/${problem.id}`}
-      className="block bg-white rounded-lg shadow-md hover:shadow-lg transition-shadow p-4"
-    >
-      <h3 className="text-lg font-medium text-gray-900 mb-2">{problem.name}</h3>
-      {problem.label && (
-        <div className="inline-block bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded-full mb-3">
-          {problem.label}
-        </div>
-      )}
-      {problem.description && (
-        <p className="text-gray-600 mb-4 line-clamp-3">{problem.description}</p>
-      )}
-      <div className="text-xs text-gray-400">
-        생성일: {new Date(problem.created_at).toLocaleDateString()}
-      </div>
-    </Link>
   );
 };
 

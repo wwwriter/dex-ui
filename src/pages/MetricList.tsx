@@ -1,11 +1,14 @@
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Link, useParams } from "react-router-dom";
 import { metricApi } from "../api/dexApi";
 import { Metric } from "../types";
 import { FiPlus, FiBarChart2, FiStar } from "react-icons/fi";
+import { createListQueryKey } from "../api/query-keys";
+import DropdownMenu from "../components/DropdownMenu";
 
 const MetricList = () => {
   const { ontology_id } = useParams<{ ontology_id: string }>();
+  const queryClient = useQueryClient();
 
   // 현재 온톨로지에 해당하는 지표만 가져오기
   const {
@@ -13,9 +16,25 @@ const MetricList = () => {
     isLoading,
     error,
   } = useQuery({
-    queryKey: ["metrics", ontology_id],
+    queryKey: createListQueryKey("metrics", {
+      limit: 40,
+      filters: { ontology_id: Number(ontology_id) },
+    }),
     queryFn: () => metricApi.getAll(Number(ontology_id), { limit: 40 }),
   });
+
+  const deleteMutation = useMutation({
+    mutationFn: (id: number) => metricApi.delete(id),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["metrics", ontology_id] });
+    },
+  });
+
+  const handleDelete = (id: number) => {
+    if (window.confirm("정말로 이 지표를 삭제하시겠습니까?")) {
+      deleteMutation.mutate(id);
+    }
+  };
 
   if (isLoading) {
     return <div className="text-center py-10">데이터를 불러오는 중...</div>;
@@ -65,7 +84,12 @@ const MetricList = () => {
               </h3>
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                 {mainMetrics.map((metric) => (
-                  <MetricCard key={metric.id} metric={metric} />
+                  <div key={metric.id} className="relative">
+                    <div className="absolute top-4 right-4">
+                      <DropdownMenu onDelete={() => handleDelete(metric.id)} />
+                    </div>
+                    <MetricCard metric={metric} />
+                  </div>
                 ))}
               </div>
             </div>
@@ -78,7 +102,12 @@ const MetricList = () => {
               </h3>
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                 {otherMetrics.map((metric) => (
-                  <MetricCard key={metric.id} metric={metric} />
+                  <div key={metric.id} className="relative">
+                    <div className="absolute top-4 right-4">
+                      <DropdownMenu onDelete={() => handleDelete(metric.id)} />
+                    </div>
+                    <MetricCard metric={metric} />
+                  </div>
                 ))}
               </div>
             </div>

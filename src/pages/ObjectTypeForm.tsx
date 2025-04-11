@@ -3,6 +3,7 @@ import { useNavigate, useParams } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { ObjectType } from "../types";
 import { objectTypeApi } from "../api/dexApi";
+import { createDetailQueryKey } from "../api/query-keys";
 
 interface ObjectTypeFormProps {
   initialData?: ObjectType;
@@ -30,7 +31,7 @@ const ObjectTypeForm = ({
     isLoading: isLoadingObjectType,
     error: objectTypeError,
   } = useQuery({
-    queryKey: ["objectType", id],
+    queryKey: createDetailQueryKey("objectTypes", Number(id)),
     queryFn: () => objectTypeApi.getById(Number(id)),
     enabled: isEditing && !!id,
   });

@@ -3,6 +3,7 @@ import { useNavigate, useParams } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { Metric } from "../types";
 import { metricApi } from "../api/dexApi";
+import { createDetailQueryKey } from "../api/query-keys";
 
 interface MetricFormProps {
   initialData?: Metric;
@@ -34,7 +35,7 @@ const MetricForm = ({ initialData, isEditing = false }: MetricFormProps) => {
     isLoading: isLoadingMetric,
     error: metricError,
   } = useQuery({
-    queryKey: ["metric", id],
+    queryKey: createDetailQueryKey("metrics", Number(id)),
     queryFn: () => metricApi.getById(Number(id)),
     enabled: isEditing && !!id,
   });
