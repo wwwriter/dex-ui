@@ -11,6 +11,7 @@ import OfflineStatus from "./components/OfflineStatus";
 import NavigationTabs from "./components/NavigationTabs";
 import Login from "./pages/Login";
 import axiosInstance from "./api/axios";
+import { useUser } from "./hooks/useUser";
 
 const queryClient = new QueryClient();
 
@@ -26,19 +27,7 @@ const MetricList = lazy(() => import("./pages/MetricList"));
 const MetricForm = lazy(() => import("./pages/MetricForm"));
 
 function AppContent() {
-  const { data: profile, isLoading } = useQuery({
-    queryKey: ["profile"],
-    queryFn: async () => {
-      const response = await axiosInstance.get("/auth/profile");
-      return response.data;
-    },
-    retry: false,
-  });
-
-  if (isLoading) {
-    return <div>로딩 중...</div>;
-  }
-  // useEffect(() => {}, [profile]);
+  useUser();
 
   return (
     <div className="min-h-screen w-screen bg-gray-100 flex flex-col">
