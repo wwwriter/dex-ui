@@ -4,27 +4,27 @@ import {
   QueryClientProvider,
   useQuery,
 } from "@tanstack/react-query";
-import OntologyView from "./pages/OntologyView";
+import OntologyView from "./pages/ontology/OntologyView";
 import { Suspense, lazy, useEffect } from "react";
 import Header from "./components/Header";
 import OfflineStatus from "./components/OfflineStatus";
 import NavigationTabs from "./components/NavigationTabs";
 import Login from "./pages/Login";
-import axiosInstance from "./api/axios";
 import { useUser } from "./hooks/useUser";
+import KnowledgeDetail from "./pages/knowledge/KnowledgeDetail";
 
 const queryClient = new QueryClient();
 
 // 홈페이지 컴포넌트 (대시보드나 온톨로지 목록 등을 표시할 수 있음)
-const OntologyList = lazy(() => import("./pages/OntologyList"));
-const ProblemList = lazy(() => import("./pages/ProblemList"));
-const ProblemForm = lazy(() => import("./pages/ProblemForm"));
-const KnowledgeList = lazy(() => import("./pages/KnowledgeList"));
-const KnowledgeForm = lazy(() => import("./pages/KnowledgeForm"));
-const ObjectTypeList = lazy(() => import("./pages/ObjectTypeList"));
-const ObjectTypeForm = lazy(() => import("./pages/ObjectTypeForm"));
-const MetricList = lazy(() => import("./pages/MetricList"));
-const MetricForm = lazy(() => import("./pages/MetricForm"));
+const OntologyList = lazy(() => import("./pages/ontology/OntologyList"));
+const ProblemList = lazy(() => import("./pages/problem/ProblemList"));
+const ProblemForm = lazy(() => import("./pages/problem/ProblemForm"));
+const KnowledgeList = lazy(() => import("./pages/knowledge/KnowledgeList"));
+const KnowledgeForm = lazy(() => import("./pages/knowledge/KnowledgeForm"));
+const ObjectTypeList = lazy(() => import("./pages/objectType/ObjectTypeList"));
+const ObjectTypeForm = lazy(() => import("./pages/objectType/ObjectTypeForm"));
+const MetricList = lazy(() => import("./pages/metric/MetricList"));
+const MetricForm = lazy(() => import("./pages/metric/MetricForm"));
 
 function AppContent() {
   useUser();
@@ -61,8 +61,13 @@ function AppContent() {
             />
             <Route
               path="/ontologies/:ontology_id/knowlege/:id"
+              element={<KnowledgeDetail />}
+            />
+            <Route
+              path="/ontologies/:ontology_id/knowlege/:id/edit"
               element={<KnowledgeForm isEditing={true} />}
             />
+            
             <Route
               path="/ontologies/:ontology_id/object-types"
               element={<ObjectTypeList />}
