@@ -1,5 +1,6 @@
 import { encodingForModel, TiktokenModel } from "js-tiktoken";
 
+
 // 토큰 수 계산 함수
 export function countTokens(text: string, model = "text-embedding-3-large") {
   try {

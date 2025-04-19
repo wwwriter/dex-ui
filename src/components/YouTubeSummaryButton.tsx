@@ -3,13 +3,14 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useParams } from "react-router-dom";
 
 import { FiYoutube } from "react-icons/fi";
+import { runDifyWorkflow } from "../api/dify";
 
 const SUMMARY_URL = "https://data-api.soneuro-handmade.com";
 const YouTubeSummaryButton = () => {
   const { ontology_id } = useParams<{ ontology_id: string }>();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [url, setUrl] = useState("");
-  const [isLoading, setIsLoading] = useState(false);
+  
   const [error, setError] = useState<string | null>(null);
   const queryClient = useQueryClient();
   const { mutate: summarizeYouTube } = useMutation({
@@ -43,13 +44,13 @@ const YouTubeSummaryButton = () => {
     e.preventDefault();
     if (!url) return;
 
-    setIsLoading(true);
+    
     try {
-      await summarizeYouTube(url);
+      await runDifyWorkflow(url);
     } catch (error) {
       console.error("요약 생성 중 오류 발생:", error);
     } finally {
-      setIsLoading(false);
+      setIsModalOpen(false);
     }
   };
 
@@ -88,10 +89,9 @@ const YouTubeSummaryButton = () => {
                 />
                 <button
                   type="submit"
-                  disabled={isLoading}
                   className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:bg-blue-300"
                 >
-                  {isLoading ? "요약 중..." : "요약하기"}
+                  요약하기
                 </button>
               </form>
               {error && (
