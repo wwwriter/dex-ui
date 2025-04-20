@@ -10,7 +10,7 @@ const YouTubeSummaryButton = () => {
   const { ontology_id } = useParams<{ ontology_id: string }>();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [url, setUrl] = useState("");
-  
+
   const [error, setError] = useState<string | null>(null);
   const queryClient = useQueryClient();
   const { mutate: summarizeYouTube } = useMutation({
@@ -44,9 +44,8 @@ const YouTubeSummaryButton = () => {
     e.preventDefault();
     if (!url) return;
 
-    
     try {
-      await runDifyWorkflow(url);
+      await runDifyWorkflow(url, Number(ontology_id));
     } catch (error) {
       console.error("요약 생성 중 오류 발생:", error);
     } finally {

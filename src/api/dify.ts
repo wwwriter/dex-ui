@@ -11,23 +11,32 @@ interface DifyRunWorkflowResponse {
   execution_id: string;
   outputs: Record<string, any>;
 }
-const API_KEY = "app-3DvfHXIBpTeMb8UOoJFFvRLd";
-
+const YOUTUBE_SUMMARY_API_KEY = "app-3DvfHXIBpTeMb8UOoJFFvRLd";
+const PLAYLIST_SUMMARY_API_KEY = "app-QCIYng868Jp37vRe4vyvNsUN";
 /**
  * Dify 워크플로우 실행 API 요청 함수
  * @param apiKey Dify API 키
  * @param requestData 요청 데이터
  * @returns 스트리밍 모드일 경우 ReadableStream, 블로킹 모드일 경우 응답 데이터
  */
+
+
 export async function runDifyWorkflow(
-  input: string
+  input: string,
+  ontology_id: number
 ): Promise<Response | DifyRunWorkflowResponse> {
   const endpoint = "https://dify.soneuro-handmade.com/v1/workflows/run";
 
+  const hasList = input.includes("list=")|| input.includes("channel");
+
+
+
   const headers = {
-    Authorization: `Bearer ${API_KEY}`,
+    Authorization: `Bearer ${hasList ? PLAYLIST_SUMMARY_API_KEY : YOUTUBE_SUMMARY_API_KEY}`,
     "Content-Type": "application/json",
   };
+
+
 
   // 스트리밍 모드인 경우 fetch API 사용
   const response = await fetch(endpoint, {
@@ -36,6 +45,7 @@ export async function runDifyWorkflow(
     body: JSON.stringify({
       inputs: {
         input,
+        ontology_id,
       },
       response_mode: "streaming",
       user: "admin",
