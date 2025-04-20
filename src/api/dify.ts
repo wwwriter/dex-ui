@@ -1,11 +1,3 @@
-import axios from "axios";
-
-interface DifyRunWorkflowRequest {
-  inputs: Record<string, any>;
-  response_mode: "blocking" | "streaming";
-  user: string;
-}
-
 interface DifyRunWorkflowResponse {
   workflow_id: string;
   execution_id: string;
@@ -20,23 +12,20 @@ const PLAYLIST_SUMMARY_API_KEY = "app-QCIYng868Jp37vRe4vyvNsUN";
  * @returns 스트리밍 모드일 경우 ReadableStream, 블로킹 모드일 경우 응답 데이터
  */
 
-
 export async function runDifyWorkflow(
   input: string,
   ontology_id: number
 ): Promise<Response | DifyRunWorkflowResponse> {
   const endpoint = "https://dify.soneuro-handmade.com/v1/workflows/run";
 
-  const hasList = input.includes("list=")|| input.includes("channel");
-
-
+  const hasList = input.includes("list=") || input.includes("channel");
 
   const headers = {
-    Authorization: `Bearer ${hasList ? PLAYLIST_SUMMARY_API_KEY : YOUTUBE_SUMMARY_API_KEY}`,
+    Authorization: `Bearer ${
+      hasList ? PLAYLIST_SUMMARY_API_KEY : YOUTUBE_SUMMARY_API_KEY
+    }`,
     "Content-Type": "application/json",
   };
-
-
 
   // 스트리밍 모드인 경우 fetch API 사용
   const response = await fetch(endpoint, {

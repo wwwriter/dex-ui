@@ -17,7 +17,16 @@ const DropdownMenu = ({
   return (
     <div className={`relative ${className}`}>
       <button
-        onClick={() => setIsOpen(!isOpen)}
+        onMouseDown={(e) => {
+          e.preventDefault();
+          e.stopPropagation();
+          setIsOpen(!isOpen);
+        }}
+        onBlur={() => {
+          setTimeout(() => {
+            setIsOpen(false);
+          }, 100);
+        }}
         className="p-2 hover:bg-gray-100 rounded-full"
       >
         <FiMoreVertical />

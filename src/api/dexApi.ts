@@ -308,7 +308,6 @@ export const knowledgeApi = {
   ): Promise<Knowledge[]> => {
     let url = `/knowledge/?ontology_id=${ontology_id}`;
     const queryParams = buildQueryParams(params);
-    console.log(queryParams);
 
     if (queryParams) {
       url += `&${queryParams}`;
@@ -337,6 +336,10 @@ export const knowledgeApi = {
     >
   ): Promise<Knowledge> => {
     const response = await axiosInstance.put(`/knowledge/${id}`, data);
+    return response.data;
+  },
+  patch: async (id: number, data: Partial<Knowledge>): Promise<Knowledge> => {
+    const response = await axiosInstance.patch(`/knowledge/${id}`, data);
     return response.data;
   },
 
