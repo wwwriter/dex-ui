@@ -1,5 +1,10 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { Link, useNavigate, useParams } from "react-router-dom";
+import {
+  Link,
+  useNavigate,
+  useParams,
+  useSearchParams,
+} from "react-router-dom";
 import { knowledgeApi, ontologyApi } from "../../api/dexApi";
 import { Knowledge, Ontology } from "../../types";
 import { FiPlus, FiExternalLink, FiMove } from "react-icons/fi";
@@ -8,6 +13,8 @@ import { createListQueryKey } from "../../api/query-keys";
 import DropdownMenu from "../../components/DropdownMenu";
 import { useState, useEffect, useCallback, KeyboardEvent } from "react";
 import { useLongPress } from "use-long-press";
+import SearchButton from "../../components/SearchButton";
+import SearchModal from "../../components/SearchModal";
 
 // KnowledgeItem 컴포넌트를 분리하여 각 아이템별로 훅을 사용
 const KnowledgeItem = ({
@@ -84,16 +91,13 @@ const KnowledgeItem = ({
 
 const KnowledgeList = () => {
   const { ontology_id } = useParams<{ ontology_id: string }>();
+  const [searchParams, setSearchParams] = useSearchParams();
+  const currentSearchQuery = searchParams.get("q") || "";
 
-  const [editingKnowledge, setEditingKnowledge] = useState<Knowledge | null>(
-    null
-  );
-  const [formData, setFormData] = useState({
-    name: "",
-    description: "",
-  });
   const [selectedItems, setSelectedItems] = useState<number[]>([]);
   const [isMoveModalOpen, setIsMoveModalOpen] = useState(false);
+  const [isSearchModalOpen, setIsSearchModalOpen] = useState(false);
+  const [searchQuery, setSearchQuery] = useState(currentSearchQuery);
   const [targetOntologyId, setTargetOntologyId] = useState<string>("");
   const [isCommandKeyPressed, setIsCommandKeyPressed] = useState(false);
 
@@ -102,7 +106,14 @@ const KnowledgeList = () => {
   const queryKey = createListQueryKey("knowledge", {
     limit: 200,
     sort: "updated_at.desc",
-    filters: { ontology_id: Number(ontology_id) },
+    filters: {
+      ontology_id: Number(ontology_id),
+      "name[search]": currentSearchQuery,
+    },
+  });
+  const ontologyQueryKey = createListQueryKey("ontologies", {
+    limit: 200,
+    sort: "updated_at.desc",
   });
 
   // 현재 온톨로지에 해당하는 지식만 가져오기
@@ -116,12 +127,13 @@ const KnowledgeList = () => {
       knowledgeApi.getAll(Number(ontology_id), {
         limit: 200,
         sort: "updated_at.desc",
+        filters: { "name[search]": currentSearchQuery },
       }),
   });
 
   // 온톨로지 목록 가져오기
   const { data: ontologyList = [], isLoading: isOntologyLoading } = useQuery({
-    queryKey: ["ontologies"],
+    queryKey: ontologyQueryKey,
     queryFn: () => ontologyApi.getAll(),
   });
 
@@ -209,6 +221,24 @@ const KnowledgeList = () => {
     setSelectedItems([]);
   }, []);
 
+  // 검색 실행 함수
+  const handleSearch = useCallback(() => {
+    if (searchQuery.trim()) {
+      searchParams.set("q", searchQuery.trim());
+    } else {
+      searchParams.delete("q");
+    }
+    setSearchParams(searchParams);
+    setIsSearchModalOpen(false);
+  }, [searchQuery, searchParams, setSearchParams]);
+
+  // 검색 초기화 함수
+  const handleResetSearch = useCallback(() => {
+    setSearchQuery("");
+    searchParams.delete("q");
+    setSearchParams(searchParams);
+  }, [searchParams, setSearchParams]);
+
   // 이동 모달 확인 버튼 핸들러
   const handleMoveConfirm = () => {
     if (targetOntologyId && selectedItems.length > 0) {
@@ -263,6 +293,11 @@ const KnowledgeList = () => {
               )}
             </>
           )}
+          <SearchButton
+            currentSearchQuery={currentSearchQuery}
+            onClick={() => setIsSearchModalOpen(true)}
+            onReset={handleResetSearch}
+          />
           <button
             onClick={() => navigate(`/ontologies/${ontology_id}/knowlege/new`)}
             className="flex items-center gap-2 bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors"
@@ -302,6 +337,15 @@ const KnowledgeList = () => {
 
       {/* YouTube 요약 버튼 컴포넌트 */}
       <YouTubeSummaryButton />
+
+      {/* 검색 모달 */}
+      <SearchModal
+        isOpen={isSearchModalOpen}
+        onClose={() => setIsSearchModalOpen(false)}
+        searchQuery={searchQuery}
+        setSearchQuery={setSearchQuery}
+        onSearch={handleSearch}
+      />
 
       {/* 지식 이동 모달 */}
       {isMoveModalOpen && (
