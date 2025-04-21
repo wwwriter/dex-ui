@@ -21,6 +21,69 @@ const ChatModal: React.FC<ChatModalProps> = ({ onClose }) => {
   const [isLoading, setIsLoading] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
+  const [expandedThoughts, setExpandedThoughts] = useState<
+    Record<string, boolean>
+  >({});
+
+  // 생각 아코디언 토글 함수
+  const toggleThought = (id: string) => {
+    setExpandedThoughts((prev) => ({
+      ...prev,
+      [id]: !prev[id],
+    }));
+  };
+
+  // <think> 태그를 처리하는 함수
+  const processThinkTags = (text: string): React.ReactNode[] => {
+    if (!text.includes("</think>")) return [text];
+
+    const segments = [];
+
+    // </think> 태그 위치 찾기
+    const endTagIndex = text.indexOf("</think>");
+
+    if (endTagIndex !== -1) {
+      // </think> 이전의 모든 내용을 생각 내용으로 간주
+      const thoughtContent = text.substring(0, endTagIndex);
+      const thoughtId = "thought-0";
+
+      // 생각 내용을 아코디언으로 추가
+      segments.push(
+        <div
+          key={thoughtId}
+          className="my-2 border border-gray-200 rounded-md overflow-hidden"
+        >
+          <button
+            onClick={() => toggleThought(thoughtId)}
+            className="w-full p-2 bg-gray-100 text-left flex justify-between items-center"
+          >
+            <span className="font-medium text-gray-700">생각중...</span>
+            <span>{expandedThoughts[thoughtId] ? "▲" : "▼"}</span>
+          </button>
+          {expandedThoughts[thoughtId] && (
+            <div className="p-3 bg-gray-50">
+              <ReactMarkdown components={MarkdownComponents}>
+                {thoughtContent}
+              </ReactMarkdown>
+            </div>
+          )}
+        </div>
+      );
+
+      // </think> 이후의 내용 추가
+      const remainingText = text.substring(endTagIndex + 8); // 8 = "</think>".length
+
+      if (remainingText.trim() !== "") {
+        segments.push(
+          <ReactMarkdown key="remaining" components={MarkdownComponents}>
+            {remainingText}
+          </ReactMarkdown>
+        );
+      }
+    }
+
+    return segments;
+  };
 
   // 스크롤을 항상 최신 메시지로 이동
   const scrollToBottom = () => {
@@ -344,13 +407,20 @@ const ChatModal: React.FC<ChatModalProps> = ({ onClose }) => {
                     </span>
                   </div>
                   <div className="markdown-wrapper">
+                    {/* {message.isBot ? (
+                      <>{processThinkTags(message.text)}</>
+                    ) : (
+                      message.text
+                    )} */}
+
                     {message.isBot ? (
-                      <ReactMarkdown
-                        // remarkPlugins={[remarkGfm]}
-                        components={MarkdownComponents}
-                      >
-                        {message.text}
-                      </ReactMarkdown>
+                      message.text.includes("</think>") ? (
+                        <>{processThinkTags(message.text)}</>
+                      ) : (
+                        <ReactMarkdown components={MarkdownComponents}>
+                          {message.text}
+                        </ReactMarkdown>
+                      )
                     ) : (
                       message.text
                     )}
