@@ -73,12 +73,6 @@ const KnowledgeItem = ({
           </p>
         )}
 
-        {knowledge.mermaid && (
-          <div className="border border-gray-200 rounded p-2 mb-4 bg-gray-50">
-            <p className="text-xs text-gray-500">Mermaid 다이어그램 포함</p>
-          </div>
-        )}
-
         <div className="flex justify-between items-center mt-2">
           <div className="text-xs text-gray-400">
             생성일: {new Date(knowledge.created_at).toLocaleDateString()}
@@ -111,10 +105,7 @@ const KnowledgeList = () => {
       "name[search]": currentSearchQuery,
     },
   });
-  const ontologyQueryKey = createListQueryKey("ontologies", {
-    limit: 200,
-    sort: "updated_at.desc",
-  });
+  const ontologyQueryKey = createListQueryKey("ontologies", {});
 
   // 현재 온톨로지에 해당하는 지식만 가져오기
   const {

@@ -5,6 +5,7 @@ import { Problem } from "../../types";
 import { problemApi } from "../../api/dexApi";
 import MDEditor from "@uiw/react-md-editor";
 import { createDetailQueryKey } from "../../api/query-keys";
+import { INITIAL_PROBLEM_DATA } from "./constant";
 
 interface ProblemFormProps {
   initialData?: Problem;
@@ -18,7 +19,7 @@ const ProblemForm = ({ initialData, isEditing = false }: ProblemFormProps) => {
   const [formData, setFormData] = useState<Partial<Problem>>({
     name: "",
     label: "",
-    description: "",
+    description: INITIAL_PROBLEM_DATA,
     ontology_id: Number(ontology_id),
   });
 
@@ -116,23 +117,6 @@ const ProblemForm = ({ initialData, isEditing = false }: ProblemFormProps) => {
             value={formData.name || ""}
             onChange={handleChange}
             required
-            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500"
-          />
-        </div>
-
-        <div className="mb-4">
-          <label
-            htmlFor="label"
-            className="block text-sm font-medium text-gray-700 mb-1"
-          >
-            레이블
-          </label>
-          <input
-            type="text"
-            id="label"
-            name="label"
-            value={formData.label || ""}
-            onChange={handleChange}
             className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500"
           />
         </div>

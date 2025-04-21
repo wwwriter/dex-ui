@@ -5,6 +5,7 @@ import { Link } from "react-router-dom";
 import { ontologyApi } from "../../api/dexApi";
 import { Ontology } from "../../types";
 import DropdownMenu from "../../components/DropdownMenu";
+import { createListQueryKey } from "../../api/query-keys";
 
 const OntologyList = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -14,11 +15,12 @@ const OntologyList = () => {
     description: "",
   });
   const queryClient = useQueryClient();
+  const queryKey = createListQueryKey("ontologies",{});
 
   const { data: ontologies = [] as Ontology[], isLoading } = useQuery<
     Ontology[]
   >({
-    queryKey: ["ontologies"],
+    queryKey,
     queryFn: () => ontologyApi.getAll(),
   });
 

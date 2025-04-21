@@ -31,7 +31,7 @@ function AppContent() {
 
   return (
     <div className="min-h-screen w-screen bg-gray-100 flex flex-col">
-      <Header />
+      <Header /> 
 
       <main className="h-[calc(100vh-64px)] overflow-auto md:ml-16 pb-16 md:pb-0">
         <Suspense fallback={<div>로딩 중...</div>}>
