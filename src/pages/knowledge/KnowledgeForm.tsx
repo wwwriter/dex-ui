@@ -66,7 +66,7 @@ const KnowledgeForm = ({
 
   // 입력 변경 핸들러
   const handleChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
   ) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
@@ -88,7 +88,7 @@ const KnowledgeForm = ({
           formData as Omit<
             Knowledge,
             "id" | "created_at" | "updated_at" | "deleted_at"
-          >,
+          >
         );
       }
       if (id) {
@@ -120,7 +120,7 @@ const KnowledgeForm = ({
             title: formData.name,
             content: formData.description,
           }),
-        },
+        }
       );
 
       if (!response.ok) {
@@ -183,7 +183,7 @@ const KnowledgeForm = ({
             required
           />
         </div>
-        <div className="w-full lg:w-1/2">
+        <div className="w-full ">
           <FormInput
             label="링크"
             name="link"
@@ -195,8 +195,8 @@ const KnowledgeForm = ({
         </div>
       </div>
 
-      <div className="flex flex-col lg:flex-row gap-4">
-        <div className="w-full lg:w-1/2">
+      <div className="flex flex-col  gap-4">
+        <div className="w-full ">
           <MarkdownEditor
             label="요약"
             value={formData.summary || ""}
@@ -204,34 +204,37 @@ const KnowledgeForm = ({
             height={600}
           />
         </div>
-        <div className="w-full lg:w-1/2">
-          <MarkdownEditor
-            label="설명"
-            value={formData.description || ""}
-            onChange={(value) => handleDescriptionChange("description", value)}
-            height={600}
-          />
-        </div>
-      </div>
-
-      <div className="w-full lg:w-1/2">
-        <FormInput
-          label="Mermaid 다이어그램"
-          name="mermaid"
-          value={formData.mermaid || ""}
-          onChange={handleChange}
-          type="textarea"
-          rows={29}
-          placeholder="graph TD;
+        <div className="flex flex-col gap-4 lg:flex-row">
+          <div className="w-full lg:w-1/2">
+            <MarkdownEditor
+              label="설명"
+              value={formData.description || ""}
+              onChange={(value) =>
+                handleDescriptionChange("description", value)
+              }
+              height={600}
+            />
+          </div>
+          <div className="w-full lg:w-1/2">
+            <FormInput
+              label="Mermaid 다이어그램"
+              name="mermaid"
+              value={formData.mermaid || ""}
+              onChange={handleChange}
+              type="textarea"
+              rows={29}
+              placeholder="graph TD;
     A-->B;
     A-->C;
     B-->D;
     C-->D;"
-          className="font-mono text-sm"
-        />
-        <p className="mt-1 text-xs text-gray-500">
-          Mermaid 마크다운 형식으로 다이어그램을 작성하세요.
-        </p>
+              className="font-mono text-sm"
+            />
+            <p className="mt-1 text-xs text-gray-500">
+              Mermaid 마크다운 형식으로 다이어그램을 작성하세요.
+            </p>
+          </div>
+        </div>
       </div>
 
       <div className="flex justify-end space-x-4">
