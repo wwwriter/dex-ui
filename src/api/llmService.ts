@@ -30,7 +30,10 @@ interface VLLMMessage {
 }
 
 // 채팅 메시지를 vllm API 형식으로 변환하는 함수
-const formatMessagesToVLLM = (messages: ChatMessage[]): VLLMMessage[] => {
+const formatMessagesToVLLM = (
+  messages: ChatMessage[],
+  contextMessage?: string
+): VLLMMessage[] => {
   // 시스템 프롬프트
   const systemPrompt = `당신은 친절하고 도움이 되는 AI 어시스턴트입니다. 사용자의 질문에 한국어로 답변해주세요.
 
@@ -48,6 +51,9 @@ const formatMessagesToVLLM = (messages: ChatMessage[]): VLLMMessage[] => {
   const vllmMessages: VLLMMessage[] = [
     { role: "system", content: systemPrompt },
   ];
+  if (contextMessage) {
+    vllmMessages.push({ role: "system", content: contextMessage });
+  }
 
   // 첫 번째 메시지(봇 인삿말)는 제외
   const messageHistory = messages.filter((_, index) => index > 0);
@@ -68,10 +74,11 @@ const formatMessagesToVLLM = (messages: ChatMessage[]): VLLMMessage[] => {
 export const fetchChatResponse = async (
   messages: ChatMessage[],
   onChunk: (chunk: string) => void,
+  contextMessage?: string
 ): Promise<string> => {
   try {
     // 메시지를 vllm API 형식으로 변환
-    const vllmMessages = formatMessagesToVLLM(messages);
+    const vllmMessages = formatMessagesToVLLM(messages, contextMessage);
 
     const response = await fetch(`${BASE_URL}/v1/chat/completions`, {
       method: "POST",

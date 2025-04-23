@@ -2,25 +2,29 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Link, useParams } from "react-router-dom";
 import { metricApi } from "../../api/dexApi";
 import { Metric } from "../../types";
-import { FiPlus, FiBarChart2, FiStar } from "react-icons/fi";
+import { FiBarChart2, FiStar } from "react-icons/fi";
 import { createListQueryKey } from "../../api/query-keys";
 import DropdownMenu from "../../components/DropdownMenu";
+import ListPageLayout from "../../components/ListPageLayout";
+import {
+  getMetricTypeClassName,
+  getMetricTypeInfo,
+} from "../../utils/metricUtils";
 
 const MetricList = () => {
   const { ontology_id } = useParams<{ ontology_id: string }>();
   const queryClient = useQueryClient();
 
-  // 현재 온톨로지에 해당하는 지표만 가져오기
   const {
     data: metrics = [],
     isLoading,
     error,
   } = useQuery({
     queryKey: createListQueryKey("metrics", {
-      limit: 40,
+      limit: 200,
       filters: { ontology_id: Number(ontology_id) },
     }),
-    queryFn: () => metricApi.getAll(Number(ontology_id), { limit: 40 }),
+    queryFn: () => metricApi.getAll(Number(ontology_id), { limit: 200 }),
   });
 
   const deleteMutation = useMutation({
@@ -36,85 +40,57 @@ const MetricList = () => {
     }
   };
 
-  if (isLoading) {
-    return <div className="text-center py-10">데이터를 불러오는 중...</div>;
-  }
-
-  if (error) {
-    return (
-      <div className="text-center py-10 text-red-600">
-        오류가 발생했습니다: {String(error)}
-      </div>
-    );
-  }
-
   // 주요 지표와 일반 지표로 분리
   const mainMetrics = metrics.filter((metric) => !!metric.is_main_metric);
   const otherMetrics = metrics.filter((metric) => !metric.is_main_metric);
 
   return (
-    <div className="container mx-auto p-4">
-      <div className="flex justify-between items-center mb-6">
-        <h2 className="text-2xl font-semibold text-gray-900">지표 목록</h2>
-        <Link
-          to={`/ontologies/${ontology_id}/metrics/new`}
-          className="flex items-center bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors"
-        >
-          <FiPlus className="mr-2" />새 지표 추가
-        </Link>
-      </div>
-
-      {metrics.length === 0 ? (
-        <div className="text-center py-10 bg-white rounded-lg shadow-md">
-          <p className="text-gray-500">표시할 지표가 없습니다.</p>
-          <Link
-            to={`/ontologies/${ontology_id}/metrics/new`}
-            className="inline-block mt-4 text-blue-600 hover:underline"
-          >
-            첫 번째 지표 추가하기
-          </Link>
-        </div>
-      ) : (
-        <div className="space-y-8">
-          {mainMetrics.length > 0 && (
-            <div>
-              <h3 className="text-lg font-medium text-gray-800 mb-4 flex items-center">
-                <FiStar className="mr-2 text-yellow-500" />
-                주요 지표
-              </h3>
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                {mainMetrics.map((metric) => (
-                  <div key={metric.id} className="relative">
-                    <div className="absolute top-4 right-4">
-                      <DropdownMenu onDelete={() => handleDelete(metric.id)} />
-                    </div>
-                    <MetricCard metric={metric} />
-                  </div>
-                ))}
+    <ListPageLayout
+      title="지표 목록"
+      addButtonText="지표"
+      addButtonLink={`/ontologies/${ontology_id}/metrics/new`}
+      isEmpty={metrics.length === 0}
+      emptyMessage="표시할 지표가 없습니다."
+      emptyButtonLink={`/ontologies/${ontology_id}/metrics/new`}
+      emptyButtonText="첫 번째 지표 추가하기"
+      isLoading={isLoading}
+      error={error}
+    >
+      {mainMetrics.length > 0 && (
+        <div className="col-span-full">
+          <h3 className="text-lg font-medium text-gray-800 mb-4 flex items-center">
+            <FiStar className="mr-2 text-yellow-500" />
+            주요 지표
+          </h3>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {mainMetrics.map((metric) => (
+              <div key={metric.id} className="relative">
+                <div className="absolute top-4 right-4">
+                  <DropdownMenu onDelete={() => handleDelete(metric.id)} />
+                </div>
+                <MetricCard metric={metric} />
               </div>
-            </div>
-          )}
-
-          {otherMetrics.length > 0 && (
-            <div>
-              <h3 className="text-lg font-medium text-gray-800 mb-4">
-                일반 지표
-              </h3>
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                {otherMetrics.map((metric) => (
-                  <div key={metric.id} className="relative">
-                    <div className="absolute top-4 right-4">
-                      <DropdownMenu onDelete={() => handleDelete(metric.id)} />
-                    </div>
-                    <MetricCard metric={metric} />
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
+            ))}
+          </div>
         </div>
       )}
-    </div>
+
+      {otherMetrics.length > 0 && (
+        <div className="col-span-full">
+          <h3 className="text-lg font-medium text-gray-800 mb-4">일반 지표</h3>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {otherMetrics.map((metric) => (
+              <div key={metric.id} className="relative">
+                <div className="absolute top-4 right-4">
+                  <DropdownMenu onDelete={() => handleDelete(metric.id)} />
+                </div>
+                <MetricCard metric={metric} />
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+    </ListPageLayout>
   );
 };
 
@@ -162,18 +138,8 @@ const MetricCard = ({ metric }: MetricCardProps) => {
         <span
           className={`${typeColor.bg} ${typeColor.text} text-xs px-2 py-1 rounded-full`}
         >
-          {metric.type === "simple" && "단순"}
-          {metric.type === "derived" && "파생"}
-          {metric.type === "cumulative" && "누적"}
-          {metric.type === "ratio" && "비율"}
-          {metric.type === "conversion" && "전환"}
+          {getMetricTypeInfo(metric.type).label}
         </span>
-
-        {metric.label && (
-          <span className="ml-2 bg-gray-100 text-gray-800 text-xs px-2 py-1 rounded-full">
-            {metric.label}
-          </span>
-        )}
       </div>
 
       {metric.description && (

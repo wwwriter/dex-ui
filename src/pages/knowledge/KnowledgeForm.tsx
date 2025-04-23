@@ -66,7 +66,7 @@ const KnowledgeForm = ({
 
   // 입력 변경 핸들러
   const handleChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
   ) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
@@ -88,7 +88,7 @@ const KnowledgeForm = ({
           formData as Omit<
             Knowledge,
             "id" | "created_at" | "updated_at" | "deleted_at"
-          >,
+          >
         );
       }
       if (id) {
@@ -120,7 +120,7 @@ const KnowledgeForm = ({
             title: formData.name,
             content: formData.description,
           }),
-        },
+        }
       );
 
       if (!response.ok) {
@@ -205,28 +205,12 @@ const KnowledgeForm = ({
           />
         </div>
         <div className="w-full lg:w-1/2">
-          <button
-            type="button"
-            onClick={() => setIsDescriptionOpen(!isDescriptionOpen)}
-            className="flex items-center justify-between w-full px-4 py-2 text-left bg-gray-50 rounded-md hover:bg-gray-100 mb-4"
-          >
-            <span className="text-sm font-medium text-gray-700">설명</span>
-            {isDescriptionOpen ? (
-              <ChevronUpIcon className="w-5 h-5 text-gray-500" />
-            ) : (
-              <ChevronDownIcon className="w-5 h-5 text-gray-500" />
-            )}
-          </button>
-          {isDescriptionOpen && (
-            <MarkdownEditor
-              label=""
-              value={formData.description || ""}
-              onChange={(value) =>
-                handleDescriptionChange("description", value)
-              }
-              height={600}
-            />
-          )}
+          <MarkdownEditor
+            label="설명"
+            value={formData.description || ""}
+            onChange={(value) => handleDescriptionChange("description", value)}
+            height={600}
+          />
         </div>
       </div>
 

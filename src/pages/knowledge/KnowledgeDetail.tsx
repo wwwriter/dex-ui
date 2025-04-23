@@ -42,7 +42,7 @@ const KnowledgeDetail = () => {
   return (
     <div className="container mx-auto relative">
       <div className="flex justify-between items-center p-4 mb-2">
-        <h2 className="text-xl md:text-2xl font-semibold text-gray-900">
+        <h2 className="text-xl md:text-xl font-semibold text-gray-900">
           {knowledge.name}
         </h2>
         <div className="flex flex-col space-y-2 md:flex-row md:space-y-0 md:space-x-2 min-w-[80px]">
@@ -78,30 +78,23 @@ const KnowledgeDetail = () => {
           </div>
         )}
 
-        <div>
-          {/* <h3 className="text-lg font-medium text-gray-900 mb-1 p-4">요약</h3> */}
-          <MarkdownContent content={removeThinkTags(knowledge.summary || "")} />
-        </div>
-        <div className="mb-2">
-          <button
-            type="button"
-            onClick={() => setIsDescriptionOpen(!isDescriptionOpen)}
-            className="flex items-center justify-between w-full px-4 py-2 text-left bg-gray-50 rounded-md hover:bg-gray-100"
-          >
-            <span className="text-lg font-medium text-gray-900 mb-5">설명</span>
-            {isDescriptionOpen ? (
-              <ChevronUpIcon className="w-5 h-5 text-gray-500" />
-            ) : (
-              <ChevronDownIcon className="w-5 h-5 text-gray-500" />
-            )}
-          </button>
-          {isDescriptionOpen && (
-            <div className="mt-3 p-4 bg-gray-50 rounded-md flew justify-center">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+          <div>
+            <h3 className="text-lg font-medium text-gray-900 mb-2 p-4">요약</h3>
+            <div className="p-4">
+              <MarkdownContent
+                content={removeThinkTags(knowledge.summary || "")}
+              />
+            </div>
+          </div>
+          <div>
+            <h3 className="text-lg font-medium text-gray-900 mb-2 p-4">설명</h3>
+            <div className="p-4">
               <MarkdownContent
                 content={removeThinkTags(knowledge.description || "")}
               />
             </div>
-          )}
+          </div>
         </div>
       </div>
 

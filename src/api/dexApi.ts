@@ -8,6 +8,7 @@ import {
   Problem,
   Property,
   ProblemMetric,
+  MetricRelationship,
 } from "../types";
 import axiosInstance from "./axios";
 import { BASE_URL } from "./config";
@@ -80,7 +81,7 @@ const buildQueryParams = (params?: ApiRequest): string => {
 export const objectTypeApi = {
   getAll: async (
     ontology_id?: number,
-    params?: ApiRequest,
+    params?: ApiRequest
   ): Promise<ObjectType[]> => {
     let url = `/object_types/?ontology_id=${ontology_id}`;
     const queryParams = buildQueryParams(params);
@@ -99,7 +100,7 @@ export const objectTypeApi = {
   },
 
   create: async (
-    data: Omit<ObjectType, "id" | "created_at" | "updated_at">,
+    data: Omit<ObjectType, "id" | "created_at" | "updated_at">
   ): Promise<ObjectType> => {
     const response = await axiosInstance.post(`/object_types/`, data);
     return response.data;
@@ -107,7 +108,7 @@ export const objectTypeApi = {
 
   update: async (
     id: number,
-    data: Partial<Omit<ObjectType, "id" | "created_at" | "updated_at">>,
+    data: Partial<Omit<ObjectType, "id" | "created_at" | "updated_at">>
   ): Promise<ObjectType> => {
     const response = await axiosInstance.put(`/object_types/${id}`, data);
     return response.data;
@@ -122,7 +123,7 @@ export const objectTypeApi = {
 export const metricApi = {
   getAll: async (
     ontology_id?: number,
-    params?: ApiRequest,
+    params?: ApiRequest
   ): Promise<Metric[]> => {
     let url = `/metrics/?ontology_id=${ontology_id}`;
     const queryParams = buildQueryParams(params);
@@ -141,7 +142,7 @@ export const metricApi = {
   },
 
   create: async (
-    data: Omit<Metric, "id" | "created_at" | "updated_at">,
+    data: Omit<Metric, "id" | "created_at" | "updated_at">
   ): Promise<Metric> => {
     const response = await axiosInstance.post(`/metrics/`, data);
     return response.data;
@@ -149,7 +150,7 @@ export const metricApi = {
 
   update: async (
     id: number,
-    data: Partial<Omit<Metric, "id" | "created_at" | "updated_at">>,
+    data: Partial<Omit<Metric, "id" | "created_at" | "updated_at">>
   ): Promise<Metric> => {
     const response = await axiosInstance.put(`/metrics/${id}`, data);
     return response.data;
@@ -164,7 +165,7 @@ export const metricApi = {
 export const linkTypeApi = {
   getAll: async (
     ontology_id?: number,
-    params?: ApiRequest,
+    params?: ApiRequest
   ): Promise<LinkType[]> => {
     let url = `/link_types/?ontology_id=${ontology_id}`;
     const queryParams = buildQueryParams(params);
@@ -183,7 +184,7 @@ export const linkTypeApi = {
   },
 
   create: async (
-    data: Omit<LinkType, "id" | "created_at" | "updated_at">,
+    data: Omit<LinkType, "id" | "created_at" | "updated_at">
   ): Promise<LinkType> => {
     const response = await axiosInstance.post(`/link_types/`, data);
     return response.data;
@@ -191,7 +192,7 @@ export const linkTypeApi = {
 
   update: async (
     id: number,
-    data: Partial<Omit<LinkType, "id" | "created_at" | "updated_at">>,
+    data: Partial<Omit<LinkType, "id" | "created_at" | "updated_at">>
   ): Promise<LinkType> => {
     const response = await axiosInstance.put(`/link_types/${id}`, data);
     return response.data;
@@ -216,7 +217,7 @@ export const ontologyApi = {
   },
 
   create: async (
-    data: Omit<Ontology, "id" | "created_at" | "updated_at" | "deleted_at">,
+    data: Omit<Ontology, "id" | "created_at" | "updated_at" | "deleted_at">
   ): Promise<Ontology> => {
     const response = await axiosInstance.post(`/ontologies/`, data);
     return response.data;
@@ -226,7 +227,7 @@ export const ontologyApi = {
     id: number,
     data: Partial<
       Omit<Ontology, "id" | "created_at" | "updated_at" | "deleted_at">
-    >,
+    >
   ): Promise<Ontology> => {
     const response = await axiosInstance.put(`/ontologies/${id}`, data);
     return response.data;
@@ -241,7 +242,7 @@ export const ontologyApi = {
 export const metricObjectTypeRelationApi = {
   getAll: async (
     ontology_id?: number,
-    params?: ApiRequest,
+    params?: ApiRequest
   ): Promise<MetricObjectTypeRelation[]> => {
     let url = `/metric_object_type_relation/?ontology_id=${ontology_id}`;
     const queryParams = buildQueryParams(params);
@@ -256,17 +257,17 @@ export const metricObjectTypeRelationApi = {
 
   getById: async (id: number): Promise<MetricObjectTypeRelation> => {
     const response = await axiosInstance.get(
-      `/metric_object_type_relation/${id}`,
+      `/metric_object_type_relation/${id}`
     );
     return response.data;
   },
 
   create: async (
-    data: Omit<MetricObjectTypeRelation, "id" | "created_at" | "updated_at">,
+    data: Omit<MetricObjectTypeRelation, "id" | "created_at" | "updated_at">
   ): Promise<MetricObjectTypeRelation> => {
     const response = await axiosInstance.post(
       `/metric_object_type_relation/`,
-      data,
+      data
     );
     return response.data;
   },
@@ -275,11 +276,11 @@ export const metricObjectTypeRelationApi = {
     id: number,
     data: Partial<
       Omit<MetricObjectTypeRelation, "id" | "created_at" | "updated_at">
-    >,
+    >
   ): Promise<MetricObjectTypeRelation> => {
     const response = await axiosInstance.put(
       `/metric_object_type_relation/${id}`,
-      data,
+      data
     );
     return response.data;
   },
@@ -304,7 +305,7 @@ export const authApi = {
 export const knowledgeApi = {
   getAll: async (
     ontology_id?: number,
-    params?: ApiRequest,
+    params?: ApiRequest
   ): Promise<Knowledge[]> => {
     let url = `/knowledge/?ontology_id=${ontology_id}`;
     const queryParams = buildQueryParams(params);
@@ -323,7 +324,7 @@ export const knowledgeApi = {
   },
 
   create: async (
-    data: Omit<Knowledge, "id" | "created_at" | "updated_at" | "deleted_at">,
+    data: Omit<Knowledge, "id" | "created_at" | "updated_at" | "deleted_at">
   ): Promise<Knowledge> => {
     const response = await axiosInstance.post(`/knowledge/`, data);
     return response.data;
@@ -333,7 +334,7 @@ export const knowledgeApi = {
     id: number,
     data: Partial<
       Omit<Knowledge, "id" | "created_at" | "updated_at" | "deleted_at">
-    >,
+    >
   ): Promise<Knowledge> => {
     const response = await axiosInstance.put(`/knowledge/${id}`, data);
     return response.data;
@@ -352,7 +353,7 @@ export const knowledgeApi = {
 export const problemApi = {
   getAll: async (
     ontology_id?: number,
-    params?: ApiRequest,
+    params?: ApiRequest
   ): Promise<Problem[]> => {
     let url = `/problems/?ontology_id=${ontology_id}`;
     const queryParams = buildQueryParams(params);
@@ -371,7 +372,7 @@ export const problemApi = {
   },
 
   create: async (
-    data: Omit<Problem, "id" | "created_at" | "updated_at" | "deleted_at">,
+    data: Omit<Problem, "id" | "created_at" | "updated_at" | "deleted_at">
   ): Promise<Problem> => {
     const response = await axiosInstance.post(`/problems/`, data);
     return response.data;
@@ -381,7 +382,7 @@ export const problemApi = {
     id: number,
     data: Partial<
       Omit<Problem, "id" | "created_at" | "updated_at" | "deleted_at">
-    >,
+    >
   ): Promise<Problem> => {
     const response = await axiosInstance.put(`/problems/${id}`, data);
     return response.data;
@@ -396,7 +397,7 @@ export const problemApi = {
 export const propertyApi = {
   getAll: async (
     ontology_id?: number,
-    params?: ApiRequest,
+    params?: ApiRequest
   ): Promise<Property[]> => {
     let url = `/properties/?ontology_id=${ontology_id}`;
     const queryParams = buildQueryParams(params);
@@ -415,7 +416,7 @@ export const propertyApi = {
   },
 
   create: async (
-    data: Omit<Property, "id" | "created_at" | "updated_at" | "deleted_at">,
+    data: Omit<Property, "id" | "created_at" | "updated_at" | "deleted_at">
   ): Promise<Property> => {
     const response = await axiosInstance.post(`/properties/`, data);
     return response.data;
@@ -425,14 +426,14 @@ export const propertyApi = {
     id: number,
     data: Partial<
       Omit<Property, "id" | "created_at" | "updated_at" | "deleted_at">
-    >,
+    >
   ): Promise<Property> => {
     const response = await axiosInstance.put(`/properties/${id}`, data);
     return response.data;
   },
 
   delete: async (id: number): Promise<void> => {
-    await axiosInstance.delete(`/properties/${id}`);
+    await axiosInstance.delete(`/properties/${id}?hard=true`);
   },
 };
 
@@ -440,7 +441,7 @@ export const propertyApi = {
 export const problemMetricApi = {
   getAll: async (
     ontology_id?: number,
-    params?: ApiRequest,
+    params?: ApiRequest
   ): Promise<ProblemMetric[]> => {
     let url = `/problem_metrics/?ontology_id=${ontology_id}`;
     const queryParams = buildQueryParams(params);
@@ -459,10 +460,7 @@ export const problemMetricApi = {
   },
 
   create: async (
-    data: Omit<
-      ProblemMetric,
-      "id" | "created_at" | "updated_at" | "deleted_at"
-    >,
+    data: Omit<ProblemMetric, "id" | "created_at" | "updated_at" | "deleted_at">
   ): Promise<ProblemMetric> => {
     const response = await axiosInstance.post(`/problem_metrics/`, data);
     return response.data;
@@ -472,7 +470,7 @@ export const problemMetricApi = {
     id: number,
     data: Partial<
       Omit<ProblemMetric, "id" | "created_at" | "updated_at" | "deleted_at">
-    >,
+    >
   ): Promise<ProblemMetric> => {
     const response = await axiosInstance.put(`/problem_metrics/${id}`, data);
     return response.data;
@@ -534,5 +532,50 @@ export const knowledgeBookmarkApi = {
 
   delete: async (id: number): Promise<void> => {
     await axiosInstance.delete(`/knowledge_bookmarks/${id}?hard=true`);
+  },
+};
+
+// MetricRelationship API 함수
+export const metricRelationshipApi = {
+  getAll: async (
+    ontology_id?: number,
+    params?: ApiRequest
+  ): Promise<MetricRelationship[]> => {
+    let url = `/metric_relationship/?ontology_id=${ontology_id}`;
+    const queryParams = buildQueryParams(params);
+
+    if (queryParams) {
+      url += `&${queryParams}`;
+    }
+
+    const response = await axiosInstance.get(url);
+    return response.data.data;
+  },
+
+  getById: async (id: number): Promise<MetricRelationship> => {
+    const response = await axiosInstance.get(`/metric_relationship/${id}`);
+    return response.data;
+  },
+
+  create: async (
+    data: Omit<MetricRelationship, "id" | "deleted_at">
+  ): Promise<MetricRelationship> => {
+    const response = await axiosInstance.post(`/metric_relationship/`, data);
+    return response.data;
+  },
+
+  update: async (
+    id: number,
+    data: Partial<Omit<MetricRelationship, "id" | "deleted_at">>
+  ): Promise<MetricRelationship> => {
+    const response = await axiosInstance.put(
+      `/metric_relationship/${id}`,
+      data
+    );
+    return response.data;
+  },
+
+  delete: async (id: number): Promise<void> => {
+    await axiosInstance.delete(`/metric_relationship/${id}?hard=true`);
   },
 };

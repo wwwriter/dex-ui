@@ -16,7 +16,7 @@ const OntologyControls: React.FC<OntologyControlsProps> = ({
   return (
     <div
       className="absolute z-10 bg-white/80 backdrop-blur-sm rounded-lg shadow-md
-                     left-4 top-4 md:right-4 md:bottom-auto md:left-auto
+                     left-4 top-3 md:right-4 md:bottom-auto md:left-auto
                     p-2 md:p-3"
     >
       <div className="flex flex-col space-y-2">

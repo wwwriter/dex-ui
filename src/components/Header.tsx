@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { Link, matchPath, useParams } from "react-router-dom";
 import { FaComment } from "react-icons/fa";
 import ChatModal from "./ChatModal";
@@ -13,7 +13,7 @@ const Header: React.FC = () => {
   const param = useParams();
   const ontologyMatch = matchPath(
     { path: "/ontologies/:ontology_id/*" },
-    location.pathname,
+    location.pathname
   );
 
   const ontology_id = ontologyMatch?.params?.ontology_id;
@@ -30,7 +30,7 @@ const Header: React.FC = () => {
         acc[ontology.id] = ontology;
         return acc;
       },
-      {} as Record<number, Ontology>,
+      {} as Record<number, Ontology>
     );
   }, [ontologies]);
 
@@ -41,6 +41,35 @@ const Header: React.FC = () => {
   const handleCloseChat = () => {
     setIsChatModalOpen(false);
   };
+  useEffect(() => {
+    const handleKeyDown = (event: KeyboardEvent) => {
+      // Check if CMD+i (Mac) or CTRL+i (Windows) is pressed
+      if ((event.metaKey || event.ctrlKey) && event.key === "u") {
+        event.preventDefault(); // Prevent default browser behavior
+        handleOpenChat();
+      }
+
+      // Check if OPTION+i (Mac) or ALT+i (Windows) is pressed
+      if (event.altKey && event.key === "u") {
+        event.preventDefault(); // Prevent default browser behavior
+        handleOpenChat();
+      }
+
+      // ESC 키를 눌렀을 때 채팅 모달 닫기
+      if (event.key === "Escape" && isChatModalOpen) {
+        event.preventDefault();
+        handleCloseChat();
+      }
+    };
+
+    // Add event listener when component mounts
+    window.addEventListener("keydown", handleKeyDown);
+
+    // Remove event listener when component unmounts
+    return () => {
+      window.removeEventListener("keydown", handleKeyDown);
+    };
+  }, [isChatModalOpen]); // isChatModalOpen을 의존성 배열에 추가
 
   return (
     <header className="bg-gray-800 shadow-sm">

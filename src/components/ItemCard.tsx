@@ -13,6 +13,10 @@ interface ItemCardProps {
   onItemClick: (e: React.MouseEvent) => void;
   onDelete: () => void;
   created_at?: string;
+  onMouseDown?: () => void;
+  onMouseUp?: () => void;
+  onMouseLeave?: () => void;
+  isSelected?: boolean;
 }
 
 const ItemCard = ({
@@ -26,6 +30,10 @@ const ItemCard = ({
   onDelete,
   created_at,
   onItemClick,
+  onMouseDown,
+  onMouseUp,
+  onMouseLeave,
+  isSelected = false,
 }: ItemCardProps) => {
   return (
     <div className="relative">
@@ -33,8 +41,13 @@ const ItemCard = ({
         <DropdownMenu onDelete={onDelete} />
       </div>
       <div
-        className="block bg-white rounded-lg shadow-md hover:shadow-lg transition-shadow p-4"
+        className={`block bg-white rounded-lg shadow-md hover:shadow-lg transition-shadow p-4 ${
+          isSelected ? "ring-2 ring-blue-500" : ""
+        }`}
         onClick={onItemClick}
+        onMouseDown={onMouseDown}
+        onMouseUp={onMouseUp}
+        onMouseLeave={onMouseLeave}
       >
         <div className="flex justify-between items-start mb-3 w-full">
           <h3 className="text-base md:text-xl font-medium text-gray-900 flex items-center">

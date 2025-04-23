@@ -1,4 +1,11 @@
-import { useEffect, useRef, useMemo, useState } from "react";
+import {
+  useEffect,
+  useRef,
+  useMemo,
+  useState,
+  useCallback,
+  useLayoutEffect,
+} from "react";
 import { useParams } from "react-router-dom";
 import mermaid from "mermaid";
 import { useQuery } from "@tanstack/react-query";
@@ -8,6 +15,7 @@ import {
   metricApi,
   linkTypeApi,
   metricObjectTypeRelationApi,
+  metricRelationshipApi,
   // ontologyApi,
 } from "../../api/dexApi";
 import OntologyControls from "./OntologyControls";
@@ -53,7 +61,7 @@ const OntologyView = () => {
   const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
   const [selectedNodeId, setSelectedNodeId] = useState<string | null>(null);
   const [selectedNode, setSelectedNode] = useState<ObjectType | Metric | null>(
-    null,
+    null
   );
   const [modalType, setModalType] = useState<"object" | "metric">("object");
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -93,35 +101,44 @@ const OntologyView = () => {
     queryFn: () => linkTypeApi.getAll(Number(ontology_id)),
   });
 
-  // 노드 클릭 핸들러
-  const handleNodeClick = (nodeId: string) => {
-    setSelectedNodeId(nodeId);
+  // 메트릭 관계 데이터 가져오기
+  const { data: metricRelationships = [] } = useQuery({
+    queryKey: ["metricRelationships", ontology_id],
+    queryFn: () => metricRelationshipApi.getAll(Number(ontology_id)),
+  });
 
-    // 객체 타입 노드인 경우
-    if (nodeId.startsWith("OBJ")) {
-      const objectId = Number(nodeId.replace("OBJ", ""));
-      const objectNode = objectTypes.find((obj) => obj.id === objectId);
-      if (objectNode) {
-        setSelectedNode(objectNode);
-        setModalType("object");
-        setIsModalOpen(true);
+  // 노드 클릭 핸들러
+  const handleNodeClick = useCallback(
+    (nodeId: string) => {
+      setSelectedNodeId(nodeId);
+
+      // 객체 타입 노드인 경우
+      if (nodeId.startsWith("OBJ")) {
+        const objectId = Number(nodeId.replace("OBJ", ""));
+        const objectNode = objectTypes.find((obj) => obj.id === objectId);
+        if (objectNode) {
+          setSelectedNode(objectNode);
+          setModalType("object");
+          setIsModalOpen(true);
+        }
       }
-    }
-    // 메트릭 노드인 경우
-    else if (nodeId.startsWith("M")) {
-      const metricId = Number(nodeId.replace("M", ""));
-      const metricNode = metrics.find((m) => m.id === metricId);
-      if (metricNode) {
-        setSelectedNode(metricNode);
-        setModalType("metric");
-        setIsModalOpen(true);
+      // 메트릭 노드인 경우
+      else if (nodeId.startsWith("M")) {
+        const metricId = Number(nodeId.replace("M", ""));
+        const metricNode = metrics.find((m) => m.id === metricId);
+        if (metricNode) {
+          setSelectedNode(metricNode);
+          setModalType("metric");
+          setIsModalOpen(true);
+        }
       }
-    }
-  };
+    },
+    [objectTypes, metrics]
+  );
 
   // 온톨로지 코드 생성
   const mermaidCode = useMemo(() => {
-    let code = "flowchart TD\n";
+    let code = "flowchart LR\n";
 
     // 모든 엣지의 색상을 하늘색으로 설정
     code += "  linkStyle default stroke:#66ccff,stroke-width:2px\n\n";
@@ -139,7 +156,7 @@ const OntologyView = () => {
               ? `style OBJ${objId} fill:#f9e0e8,stroke:#ff3399,stroke-width:4px,color:#990066,font-weight:bold`
               : "";
             code += `    OBJ${objId}["${formatLabel(
-              obj.label || obj.name,
+              obj.label || obj.name
             )}"]\n`;
             if (isSelected) {
               code += `    ${style}\n`;
@@ -150,7 +167,7 @@ const OntologyView = () => {
       });
     } else {
       // 그룹이 없거나 표시하지 않는 경우 ObjectType 직접 정의
-      code += "  subgraph ObjectTypes\n";
+      code += "  subgraph 개체\n";
       objectTypes.forEach((obj) => {
         const isSelected = selectedNodeId === `OBJ${obj.id}`;
         const style = isSelected
@@ -166,14 +183,14 @@ const OntologyView = () => {
 
     // Metric 그룹 정의 (지표가 있고 보여주기 옵션이 활성화된 경우)
     if (metrics.length > 0 && showMetrics) {
-      code += "  subgraph Metrics\n";
+      code += "  subgraph 지표\n";
       metrics.forEach((metric) => {
         const isSelected = selectedNodeId === `M${metric.id}`;
         const style = isSelected
           ? `style M${metric.id} fill:#e0f0ff,stroke:#3399ff,stroke-width:4px,color:#0066cc,font-weight:bold`
           : "";
         code += `    M${metric.id}["${formatLabel(
-          metric.name || `Metric-${metric.id}`,
+          metric.name || `Metric-${metric.id}`
         )}"]\n`;
         if (isSelected) {
           code += `    ${style}\n`;
@@ -188,7 +205,7 @@ const OntologyView = () => {
         if (link.source_object_type_id && link.target_object_type_id) {
           const sourceId = `OBJ${link.source_object_type_id}`;
           const targetId = `OBJ${link.target_object_type_id}`;
-          const label = formatLabel(link.semantic_label || link.name || "연결");
+          const label = formatLabel(link.name || "연결");
           code += `  ${sourceId} -->|${label}| ${targetId}\n`;
         }
       } catch (e) {
@@ -214,7 +231,31 @@ const OntologyView = () => {
         }
       });
 
-      // 기존 measure_type_id 기반 연결도 유지 (중복되지 않는 경우에만)
+      // 메트릭 간의 관계 추가
+      metricRelationships.forEach((relation) => {
+        try {
+          const sourceMetricId = `M${relation.source_metric_id}`;
+          const targetMetricId = `M${relation.target_metric_id}`;
+
+          // 소스 메트릭과 타겟 메트릭 찾기
+          const sourceMetric = metrics.find(
+            (m) => m.id === relation.source_metric_id
+          );
+          const targetMetric = metrics.find(
+            (m) => m.id === relation.target_metric_id
+          );
+
+          if (sourceMetric && targetMetric) {
+            const label = formatLabel(
+              `${sourceMetric.name} → ${targetMetric.name}`
+            );
+            // 메트릭 관계를 점선으로 표현
+            code += `  ${sourceMetricId} -.-> ${targetMetricId}\n`;
+          }
+        } catch (e) {
+          console.error("MetricRelationship 처리 오류:", e, relation);
+        }
+      });
     }
 
     return code;
@@ -224,9 +265,11 @@ const OntologyView = () => {
     metrics,
     linkTypes,
     metricObjectTypeRelations,
+    metricRelationships,
     showGroups,
     showMetrics,
     selectedNodeId,
+    handleNodeClick,
   ]);
 
   // Mermaid 온톨로지 렌더링
@@ -278,88 +321,87 @@ const OntologyView = () => {
   }, [mermaidCode, objectTypes, metrics]);
 
   // 줌 인 함수
-  const zoomIn = () => {
+  const zoomIn = useCallback(() => {
     setZoomLevel((prevLevel) => Math.min(prevLevel + 0.1, 3));
-  };
+  }, []);
 
   // 줌 아웃 함수
-  const zoomOut = () => {
+  const zoomOut = useCallback(() => {
     setZoomLevel((prevLevel) => Math.max(prevLevel - 0.1, 0.5));
-  };
-
-  // 줌 리셋 함수
-  const resetZoom = () => {
-    setZoomLevel(1);
-    setPosition({ x: 0, y: 0 });
-  };
+  }, []);
 
   // 화면에 맞추기 함수
-  const fitToScreen = () => {
-    const container = containerRef.current;
-    if (!container) return;
+  const fitToScreen = useMemo(() => {
+    return () => {
+      const container = containerRef.current;
+      if (!container) return;
 
-    // SVG 요소 찾기
-    const svgElement = container.querySelector("svg");
-    if (!svgElement) return;
+      // SVG 요소 찾기
+      const svgElement = container.querySelector("svg");
+      if (!svgElement) return;
 
-    // 컨테이너와 SVG의 크기 비율 계산
-    const containerWidth = container.clientWidth;
-    const containerHeight = container.clientHeight;
-    const svgWidth = svgElement?.getBoundingClientRect()?.width / zoomLevel;
-    const svgHeight = svgElement?.getBoundingClientRect()?.height / zoomLevel;
+      // 컨테이너와 SVG의 크기 비율 계산
+      const containerWidth = container.clientWidth;
+      const containerHeight = container.clientHeight;
+      const svgWidth = svgElement?.getBoundingClientRect()?.width / zoomLevel;
+      const svgHeight = svgElement?.getBoundingClientRect()?.height / zoomLevel;
 
-    // 여백을 고려한 비율 계산 (10% 여백)
-    const widthRatio = (containerWidth * 0.9) / svgWidth;
-    const heightRatio = (containerHeight * 0.9) / svgHeight;
+      // 여백을 고려한 비율 계산 (10% 여백)
+      const widthRatio = (containerWidth * 0.9) / svgWidth;
+      const heightRatio = (containerHeight * 0.9) / svgHeight;
 
-    // 더 작은 비율을 선택하여 화면에 맞추기
-    const scaleFactor = Math.min(widthRatio, heightRatio, 2); // 최대 200%까지만 확대
+      // 더 작은 비율을 선택하여 화면에 맞추기
+      const scaleFactor = Math.min(widthRatio, heightRatio, 2); // 최대 200%까지만 확대
 
-    // 줌 레벨 설정
-    setZoomLevel(scaleFactor);
-    // 중앙에 위치하도록 설정
-    setPosition({ x: 0, y: 0 });
-  };
+      // 줌 레벨 설정
+      setZoomLevel(scaleFactor);
+      // 중앙에 위치하도록 설정
+      setPosition({ x: 0, y: 0 });
+    };
+  }, [zoomLevel, containerRef]);
 
   // 드래그 시작 핸들러
-  const handleMouseDown = (e: React.MouseEvent) => {
+  const handleMouseDown = useCallback((e: React.MouseEvent) => {
     // 노드 클릭 이벤트가 아닌 경우에만 드래그 처리
     if ((e.target as HTMLElement).closest(".node")) return;
 
     setIsDragging(true);
     setDragStart({ x: e.clientX, y: e.clientY });
-  };
+  }, []);
 
   // 드래그 중 핸들러
-  const handleMouseMove = (e: React.MouseEvent) => {
-    if (!isDragging) return;
+  const handleMouseMove = useCallback(
+    (e: React.MouseEvent) => {
+      if (!isDragging) return;
 
-    const dx = e.clientX - dragStart.x;
-    const dy = e.clientY - dragStart.y;
+      const dx = e.clientX - dragStart.x;
+      const dy = e.clientY - dragStart.y;
 
-    setPosition((prev) => ({
-      x: prev.x + dx,
-      y: prev.y + dy,
-    }));
+      setPosition((prev) => ({
+        x: prev.x + dx,
+        y: prev.y + dy,
+      }));
 
-    setDragStart({ x: e.clientX, y: e.clientY });
-  };
+      setDragStart({ x: e.clientX, y: e.clientY });
+    },
+    [isDragging, dragStart]
+  );
 
   // 드래그 종료 핸들러
-  const handleMouseUp = () => {
+  const handleMouseUp = useCallback(() => {
     setIsDragging(false);
-  };
+  }, []);
 
   // 마우스 휠 줌 핸들러
-  const handleWheel = (e: React.WheelEvent) => {
+  const handleWheel = useCallback((e: React.WheelEvent) => {
     // Ctrl 키(Windows) 또는 Command 키(Mac)를 누른 상태에서 휠 이벤트 처리
     if (e.ctrlKey || e.metaKey) {
       const delta = e.deltaY > 0 ? -0.1 : 0.1;
       setZoomLevel((prevLevel) =>
-        Math.min(Math.max(prevLevel + delta, 0.5), 3),
+        Math.min(Math.max(prevLevel + delta, 0.5), 3)
       );
     }
-  };
+  }, []);
 
   // 컴포넌트 마운트 시 마우스 이벤트 정리
   useEffect(() => {
@@ -378,7 +420,7 @@ const OntologyView = () => {
       (e) => {
         if (e.ctrlKey || e.metaKey) e.preventDefault();
       },
-      { passive: false },
+      { passive: false }
     );
 
     return () => {
@@ -388,20 +430,17 @@ const OntologyView = () => {
 
   // SVG가 렌더링된 후 자동으로 화면에 맞추기
   useEffect(() => {
-    if (svgContent && containerRef.current) {
-      // 약간의 지연 후 화면에 맞추기 (SVG가 완전히 렌더링된 후)
-      setTimeout(() => {
-        // fitToScreen();
-      }, 300);
-    }
-  }, [svgContent]);
+    setTimeout(() => {
+      fitToScreen();
+    }, 1000);
+  }, []);
 
   // 모달 닫기 핸들러
-  const handleCloseModal = () => {
+  const handleCloseModal = useCallback(() => {
     setIsModalOpen(false);
     setSelectedNode(null);
     setSelectedNodeId(null);
-  };
+  }, []);
 
   return (
     <div className="w-full h-full bg-gray-900 relative pb-24 md:pb-0">
@@ -421,7 +460,6 @@ const OntologyView = () => {
         zoomLevel={zoomLevel}
         onZoomIn={zoomIn}
         onZoomOut={zoomOut}
-        onResetZoom={resetZoom}
         onFitToScreen={fitToScreen}
       />
 

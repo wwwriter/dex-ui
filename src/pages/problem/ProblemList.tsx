@@ -1,16 +1,14 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { Link, useNavigate, useParams } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import { problemApi, problemBookmarkApi } from "../../api/dexApi";
 import { Problem } from "../../types";
-import { FiPlus } from "react-icons/fi";
 import ItemCard from "../../components/ItemCard";
-import { useState } from "react";
 import { createListQueryKey } from "../../api/query-keys";
 import { useUser } from "../../hooks/useUser";
+import ListPageLayout from "../../components/ListPageLayout";
 
 const ProblemList = () => {
   const { ontology_id } = useParams<{ ontology_id: string }>();
-
   const queryClient = useQueryClient();
   const navigate = useNavigate();
   const { profile } = useUser();
@@ -18,7 +16,11 @@ const ProblemList = () => {
     filters: { ontology_id },
   });
 
-  const { data: problems = [], isLoading } = useQuery({
+  const {
+    data: problems = [],
+    isLoading,
+    error,
+  } = useQuery({
     queryKey,
     queryFn: () => problemApi.getAll(Number(ontology_id)),
   });
@@ -36,10 +38,10 @@ const ProblemList = () => {
   const problemsWithBookmarks = problems.map((problem) => ({
     ...problem,
     isBookmarked: bookmarks.some(
-      (bookmark) => bookmark.problem_id === problem.id,
+      (bookmark) => bookmark.problem_id === problem.id
     ),
     problem_bookmarks: bookmarks.filter(
-      (bookmark) => bookmark.problem_id === problem.id,
+      (bookmark) => bookmark.problem_id === problem.id
     ),
   }));
 
@@ -100,40 +102,36 @@ const ProblemList = () => {
     }
   };
 
-  if (isLoading) return <div>로딩 중...</div>;
-
   return (
-    <div className="p-4">
-      <div className="flex justify-between items-center mb-6">
-        <h1 className="text-2xl font-bold text-gray-900">문제 목록</h1>
-        <button
-          onClick={() => navigate(`/ontologies/${ontology_id}/problems/new`)}
-          className="flex items-center gap-2 bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors"
-        >
-          <FiPlus />새 문제 추가
-        </button>
-      </div>
-
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-        {sortedProblems.map((problem) => (
-          <ItemCard
-            key={problem.id}
-            id={problem.id}
-            name={problem.name}
-            description={problem.description || ""}
-            isBookmarked={problem.isBookmarked}
-            ontologyId={ontology_id || ""}
-            itemType="problems"
-            onBookmark={(e) => handleBookmark(e, problem)}
-            onDelete={() => handleDelete(problem.id)}
-            onItemClick={(e) =>
-              navigate(`/ontologies/${ontology_id}/problems/${problem.id}`)
-            }
-            created_at={problem.created_at}
-          />
-        ))}
-      </div>
-    </div>
+    <ListPageLayout
+      title="문제 목록"
+      addButtonText="문제"
+      addButtonLink={`/ontologies/${ontology_id}/problems/new`}
+      isEmpty={problems.length === 0}
+      emptyMessage="표시할 문제가 없습니다."
+      emptyButtonLink={`/ontologies/${ontology_id}/problems/new`}
+      emptyButtonText="첫 번째 문제 추가하기"
+      isLoading={isLoading}
+      error={error}
+    >
+      {sortedProblems.map((problem) => (
+        <ItemCard
+          key={problem.id}
+          id={problem.id}
+          name={problem.name}
+          description={problem.description || ""}
+          isBookmarked={problem.isBookmarked}
+          ontologyId={ontology_id || ""}
+          itemType="problems"
+          onBookmark={(e) => handleBookmark(e, problem)}
+          onDelete={() => handleDelete(problem.id)}
+          onItemClick={(e) =>
+            navigate(`/ontologies/${ontology_id}/problems/${problem.id}`)
+          }
+          created_at={problem.created_at}
+        />
+      ))}
+    </ListPageLayout>
   );
 };
 

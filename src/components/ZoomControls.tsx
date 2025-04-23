@@ -4,7 +4,7 @@ interface ZoomControlsProps {
   zoomLevel: number;
   onZoomIn: () => void;
   onZoomOut: () => void;
-  onResetZoom: () => void;
+
   onFitToScreen: () => void;
 }
 
@@ -12,24 +12,24 @@ const ZoomControls: React.FC<ZoomControlsProps> = ({
   zoomLevel,
   onZoomIn,
   onZoomOut,
-  onResetZoom,
+
   onFitToScreen,
 }) => {
   return (
     <div
       className="absolute z-10 bg-white/80 backdrop-blur-sm rounded-lg shadow-md
-                     right-4 top-6 md:left-4 md:bottom-auto md:right-auto
-                    p-2 md:p-3"
+                     right-4 top-3 md:left-4 md:bottom-auto md:right-auto
+                    p-1.5 md:p-3"
     >
-      <div className="flex flex-row md:flex-row items-center space-x-2 md:space-x-2">
+      <div className="flex flex-row md:flex-row items-center space-x-1.5 md:space-x-2">
         <button
           onClick={onZoomOut}
-          className="p-2.5 md:p-2 bg-gray-100 rounded hover:bg-gray-200 focus:outline-none"
+          className="p-1.5 md:p-2 bg-gray-100 rounded hover:bg-gray-200 focus:outline-none"
           aria-label="축소"
         >
           <svg
             xmlns="http://www.w3.org/2000/svg"
-            className="h-5 w-5"
+            className="h-4 w-4 md:h-5 md:w-5"
             fill="none"
             viewBox="0 0 24 24"
             stroke="currentColor"
@@ -43,18 +43,18 @@ const ZoomControls: React.FC<ZoomControlsProps> = ({
           </svg>
         </button>
 
-        <span className="text-sm font-medium text-gray-700 min-w-[3.5rem] text-center">
+        <span className="text-xs md:text-sm font-medium text-gray-700 min-w-[2.5rem] md:min-w-[3.5rem] text-center">
           {Math.round(zoomLevel * 100)}%
         </span>
 
         <button
           onClick={onZoomIn}
-          className="p-2.5 md:p-2 bg-gray-100 rounded hover:bg-gray-200 focus:outline-none"
+          className="p-1.5 md:p-2 bg-gray-100 rounded hover:bg-gray-200 focus:outline-none"
           aria-label="확대"
         >
           <svg
             xmlns="http://www.w3.org/2000/svg"
-            className="h-5 w-5"
+            className="h-4 w-4 md:h-5 md:w-5"
             fill="none"
             viewBox="0 0 24 24"
             stroke="currentColor"
@@ -69,34 +69,13 @@ const ZoomControls: React.FC<ZoomControlsProps> = ({
         </button>
 
         <button
-          onClick={onResetZoom}
-          className="p-2.5 md:p-2 bg-gray-100 rounded hover:bg-gray-200 focus:outline-none"
-          aria-label="줌 리셋"
-        >
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            className="h-5 w-5"
-            fill="none"
-            viewBox="0 0 24 24"
-            stroke="currentColor"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={2}
-              d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
-            />
-          </svg>
-        </button>
-
-        <button
           onClick={onFitToScreen}
-          className="p-2.5 md:p-2 bg-gray-100 rounded hover:bg-gray-200 focus:outline-none"
+          className="p-1.5 md:p-2 bg-gray-100 rounded hover:bg-gray-200 focus:outline-none"
           aria-label="화면에 맞추기"
         >
           <svg
             xmlns="http://www.w3.org/2000/svg"
-            className="h-5 w-5"
+            className="h-4 w-4 md:h-5 md:w-5"
             fill="none"
             viewBox="0 0 24 24"
             stroke="currentColor"

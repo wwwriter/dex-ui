@@ -4,6 +4,8 @@ import { useQuery } from "@tanstack/react-query";
 import { Metric } from "../../types";
 import { metricApi } from "../../api/dexApi";
 import { createDetailQueryKey } from "../../api/query-keys";
+import MetricObjectRelationTable from "./MetricObjectRelationTable";
+import MetricRelationshipTable from "./MetricRelationshipTable";
 
 interface MetricFormProps {
   initialData?: Metric;
@@ -55,7 +57,7 @@ const MetricForm = ({ initialData, isEditing = false }: MetricFormProps) => {
   const handleChange = (
     e: React.ChangeEvent<
       HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
-    >,
+    >
   ) => {
     const { name, value, type } = e.target;
 
@@ -76,7 +78,7 @@ const MetricForm = ({ initialData, isEditing = false }: MetricFormProps) => {
         await metricApi.update(Number(id), formData);
       } else {
         await metricApi.create(
-          formData as Omit<Metric, "id" | "created_at" | "updated_at">,
+          formData as Omit<Metric, "id" | "created_at" | "updated_at">
         );
       }
       navigate(`/ontologies/${ontology_id}/metrics`);
@@ -100,139 +102,139 @@ const MetricForm = ({ initialData, isEditing = false }: MetricFormProps) => {
 
   return (
     <div className="container mx-auto p-4">
-      <h2 className="text-2xl font-semibold text-gray-900 mb-6">
+      <h2 className="text-xl font-semibold text-gray-900 mb-6">
         {isEditing ? "지표 편집" : "새 지표 생성"}
       </h2>
 
-      <form
-        onSubmit={handleSubmit}
-        className="bg-white rounded-lg shadow-md p-4"
-      >
-        <div className="mb-4">
-          <label
-            htmlFor="name"
-            className="block text-sm font-medium text-gray-700 mb-1"
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+        <div>
+          <form
+            onSubmit={handleSubmit}
+            className="bg-white rounded-lg shadow-md p-4 mb-8"
           >
-            이름 *
-          </label>
-          <input
-            type="text"
-            id="name"
-            name="name"
-            value={formData.name || ""}
-            onChange={handleChange}
-            required
-            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500"
-          />
+            <div className="mb-4">
+              <label
+                htmlFor="name"
+                className="block text-sm font-medium text-gray-700 mb-1"
+              >
+                이름 *
+              </label>
+              <input
+                type="text"
+                id="name"
+                name="name"
+                value={formData.name || ""}
+                onChange={handleChange}
+                required
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+              />
+            </div>
+
+            <div className="mb-4">
+              <label
+                htmlFor="description"
+                className="block text-sm font-medium text-gray-700 mb-1"
+              >
+                설명
+              </label>
+              <textarea
+                id="description"
+                name="description"
+                value={formData.description || ""}
+                onChange={handleChange}
+                rows={7}
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+              />
+            </div>
+
+            <div className="mb-4">
+              <label className="inline-flex items-center cursor-pointer">
+                <input
+                  type="checkbox"
+                  name="is_main_metric"
+                  checked={!!formData.is_main_metric}
+                  onChange={handleChange}
+                  className="form-checkbox h-4 w-4 text-blue-600"
+                />
+                <span className="ml-2 text-sm font-medium text-gray-900">
+                  주요 지표로 설정
+                </span>
+              </label>
+            </div>
+
+            <div className="mb-4">
+              <label
+                htmlFor="type"
+                className="block text-sm font-medium text-gray-700 mb-1"
+              >
+                지표 유형 *
+              </label>
+              <select
+                id="type"
+                name="type"
+                value={formData.type || "simple"}
+                onChange={handleChange}
+                required
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+              >
+                <option value="simple">단순</option>
+                <option value="derived">파생</option>
+                <option value="cumulative">누적</option>
+                <option value="ratio">비율</option>
+                <option value="conversion">전환</option>
+              </select>
+            </div>
+
+            {(formData.type === "derived" ||
+              formData.type === "ratio" ||
+              formData.type === "conversion") && (
+              <div className="mb-4 p-4 bg-gray-50 rounded-md">
+                <p className="text-sm text-gray-500 mb-2">
+                  {formData.type === "derived" &&
+                    "파생 지표는 다른 지표들의 조합으로 계산됩니다."}
+                  {formData.type === "ratio" &&
+                    "비율 지표는 두 지표의 비율로 계산됩니다."}
+                  {formData.type === "conversion" &&
+                    "전환 지표는 시작 지표와 종료 지표 간의 전환율을 계산합니다."}
+                </p>
+                <p className="text-sm text-gray-600">
+                  지표를 먼저 생성한 후, 상세 설정에서 필요한 관계를 구성할 수
+                  있습니다.
+                </p>
+              </div>
+            )}
+
+            <div className="flex justify-end space-x-4 mt-6">
+              <button
+                type="button"
+                onClick={() => navigate(`/ontologies/${ontology_id}/metrics`)}
+                className="px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50"
+              >
+                취소
+              </button>
+              <button
+                type="submit"
+                className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
+              >
+                {isEditing ? "저장" : "생성"}
+              </button>
+            </div>
+          </form>
         </div>
 
-        {/* <div className="mb-4">
-          <label
-            htmlFor="label"
-            className="block text-sm font-medium text-gray-700 mb-1"
-          >
-            레이블
-          </label>
-          <input
-            type="text"
-            id="label"
-            name="label"
-            value={formData.label || ""}
-            onChange={handleChange}
-            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500"
-          />
-        </div> */}
-
-        <div className="mb-4">
-          <label
-            htmlFor="description"
-            className="block text-sm font-medium text-gray-700 mb-1"
-          >
-            설명
-          </label>
-          <textarea
-            id="description"
-            name="description"
-            value={formData.description || ""}
-            onChange={handleChange}
-            rows={4}
-            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500"
-          />
-        </div>
-
-        <div className="mb-4">
-          <label className="inline-flex items-center cursor-pointer">
-            <input
-              type="checkbox"
-              name="is_main_metric"
-              checked={!!formData.is_main_metric}
-              onChange={handleChange}
-              className="form-checkbox h-4 w-4 text-blue-600"
+        {isEditing && metricData && (
+          <div className="space-y-8">
+            <MetricObjectRelationTable
+              metric={metricData}
+              ontology_id={Number(ontology_id)}
             />
-            <span className="ml-2 text-sm font-medium text-gray-900">
-              주요 지표로 설정
-            </span>
-          </label>
-        </div>
-
-        <div className="mb-4">
-          <label
-            htmlFor="type"
-            className="block text-sm font-medium text-gray-700 mb-1"
-          >
-            지표 유형 *
-          </label>
-          <select
-            id="type"
-            name="type"
-            value={formData.type || "simple"}
-            onChange={handleChange}
-            required
-            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500"
-          >
-            <option value="simple">단순</option>
-            <option value="derived">파생</option>
-            <option value="cumulative">누적</option>
-            <option value="ratio">비율</option>
-            <option value="conversion">전환</option>
-          </select>
-        </div>
-
-        {(formData.type === "derived" ||
-          formData.type === "ratio" ||
-          formData.type === "conversion") && (
-          <div className="mb-4 p-4 bg-gray-50 rounded-md">
-            <p className="text-sm text-gray-500 mb-2">
-              {formData.type === "derived" &&
-                "파생 지표는 다른 지표들의 조합으로 계산됩니다."}
-              {formData.type === "ratio" &&
-                "비율 지표는 두 지표의 비율로 계산됩니다."}
-              {formData.type === "conversion" &&
-                "전환 지표는 시작 지표와 종료 지표 간의 전환율을 계산합니다."}
-            </p>
-            <p className="text-sm text-gray-600">
-              지표를 먼저 생성한 후, 상세 설정에서 필요한 관계를 구성할 수
-              있습니다.
-            </p>
+            <MetricRelationshipTable
+              metric={metricData}
+              ontology_id={Number(ontology_id)}
+            />
           </div>
         )}
-
-        <div className="flex justify-end space-x-4 mt-6">
-          <button
-            type="button"
-            onClick={() => navigate(`/ontologies/${ontology_id}/metrics`)}
-            className="px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50"
-          >
-            취소
-          </button>
-          <button
-            type="submit"
-            className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
-          >
-            {isEditing ? "저장" : "생성"}
-          </button>
-        </div>
-      </form>
+      </div>
     </div>
   );
 };

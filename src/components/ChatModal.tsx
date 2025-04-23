@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from "react";
-import { FaRobot, FaUser } from "react-icons/fa";
+import { FaRobot, FaUser, FaPlus } from "react-icons/fa";
 import { ChatMessage, fetchChatResponse } from "../api/llmService";
 import ReactMarkdown from "react-markdown";
 // import "github-markdown-css/github-markdown.css";
@@ -9,14 +9,30 @@ interface ChatModalProps {
 }
 
 const ChatModal: React.FC<ChatModalProps> = ({ onClose }) => {
-  const [messages, setMessages] = useState<ChatMessage[]>([
-    {
-      id: 1,
-      text: "안녕하세요! 무엇을 도와드릴까요?",
-      isBot: true,
-      timestamp: new Date(),
-    },
-  ]);
+  const [messages, setMessages] = useState<ChatMessage[]>(() => {
+    // localStorage에서 대화 내용 불러오기
+    const savedMessages = localStorage.getItem(window.location.pathname);
+    if (savedMessages) {
+      try {
+        const parsedMessages = JSON.parse(savedMessages);
+        // timestamp를 Date 객체로 변환
+        return parsedMessages.map((msg: any) => ({
+          ...msg,
+          timestamp: new Date(msg.timestamp),
+        }));
+      } catch (error) {
+        console.error("저장된 대화 내용을 불러오는데 실패했습니다:", error);
+      }
+    }
+    return [
+      {
+        id: 1,
+        text: "안녕하세요! 무엇을 도와드릴까요?",
+        isBot: true,
+        timestamp: new Date(),
+      },
+    ];
+  });
   const [newMessage, setNewMessage] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -67,7 +83,7 @@ const ChatModal: React.FC<ChatModalProps> = ({ onClose }) => {
               </ReactMarkdown>
             </div>
           )}
-        </div>,
+        </div>
       );
 
       // </think> 이후의 내용 추가
@@ -77,7 +93,7 @@ const ChatModal: React.FC<ChatModalProps> = ({ onClose }) => {
         segments.push(
           <ReactMarkdown key="remaining" components={MarkdownComponents}>
             {remainingText}
-          </ReactMarkdown>,
+          </ReactMarkdown>
         );
       }
     }
@@ -155,7 +171,7 @@ const ChatModal: React.FC<ChatModalProps> = ({ onClose }) => {
   const MarkdownComponents = {
     // 헤더 커스터마이징
     h1: ({ node, ...props }: any) => (
-      <h1 className="text-2xl font-bold my-3" {...props} />
+      <h1 className="text-xl font-bold my-3" {...props} />
     ),
     h2: ({ node, ...props }: any) => (
       <h2 className="text-xl font-bold my-3" {...props} />
@@ -270,10 +286,52 @@ const ChatModal: React.FC<ChatModalProps> = ({ onClose }) => {
     em: ({ node, ...props }: any) => <em className="italic" {...props} />,
   };
 
+  // 현재 문서의 텍스트를 가져오는 함수
+  const getCurrentDocumentText = () => {
+    // 메인 컨텐츠 영역을 찾기
+    const mainContent = document.querySelector("main, .main-content, #content");
+    if (!mainContent) return "";
+
+    // 모든 텍스트 노드를 수집
+    const textNodes: string[] = [];
+    const walker = document.createTreeWalker(
+      mainContent,
+      NodeFilter.SHOW_TEXT,
+      {
+        acceptNode: (node) => {
+          // 공백만 있는 노드는 제외
+          return node.textContent?.trim()
+            ? NodeFilter.FILTER_ACCEPT
+            : NodeFilter.FILTER_REJECT;
+        },
+      }
+    );
+
+    let node;
+    while ((node = walker.nextNode())) {
+      textNodes.push(node.textContent?.trim() || "");
+    }
+
+    // 텍스트를 합치고 정리
+    return textNodes
+      .filter((text) => text.length > 0)
+      .join("\n")
+      .replace(/\n{3,}/g, "\n\n") // 연속된 줄바꿈 정리
+      .trim();
+  };
+
   const handleSendMessage = async (e: React.FormEvent) => {
     e.preventDefault();
 
     if (!newMessage.trim() || isLoading) return;
+
+    // 현재 문서의 텍스트 가져오기
+    const currentDocumentText = getCurrentDocumentText();
+    const contextMessage = currentDocumentText
+      ? `\n\n현재 문서 내용:\n${currentDocumentText}`
+      : "";
+
+    console.log(currentDocumentText);
 
     // 사용자 메시지 추가
     const userMessage: ChatMessage = {
@@ -305,26 +363,30 @@ const ChatModal: React.FC<ChatModalProps> = ({ onClose }) => {
       let accumulatedResponse = "";
 
       // 스트리밍 응답 처리
-      await fetchChatResponse(allMessages, (chunk) => {
-        // 응답 누적
-        accumulatedResponse += chunk;
+      await fetchChatResponse(
+        allMessages,
+        (chunk) => {
+          // 응답 누적
+          accumulatedResponse += chunk;
 
-        // 중복 제거 및 포맷팅 처리
-        const cleanedResponse = cleanDuplicatedText(accumulatedResponse);
-        const formattedResponse = formatMessage(cleanedResponse);
+          // 중복 제거 및 포맷팅 처리
+          const cleanedResponse = cleanDuplicatedText(accumulatedResponse);
+          const formattedResponse = formatMessage(cleanedResponse);
 
-        // 메시지 업데이트
-        setMessages((prevMessages) => {
-          const updatedMessages = [...prevMessages];
-          const lastMessage = updatedMessages[updatedMessages.length - 1];
+          // 메시지 업데이트
+          setMessages((prevMessages) => {
+            const updatedMessages = [...prevMessages];
+            const lastMessage = updatedMessages[updatedMessages.length - 1];
 
-          if (lastMessage && lastMessage.isBot) {
-            lastMessage.text = formattedResponse;
-          }
+            if (lastMessage && lastMessage.isBot) {
+              lastMessage.text = formattedResponse;
+            }
 
-          return updatedMessages;
-        });
-      });
+            return updatedMessages;
+          });
+        },
+        contextMessage
+      );
     } catch (error) {
       console.error("채팅 API 오류:", error);
 
@@ -349,12 +411,54 @@ const ChatModal: React.FC<ChatModalProps> = ({ onClose }) => {
     }
   };
 
+  // 메시지가 변경될 때마다 localStorage에 저장
+  useEffect(() => {
+    try {
+      localStorage.setItem(window.location.pathname, JSON.stringify(messages));
+    } catch (error) {
+      console.error("대화 내용을 저장하는데 실패했습니다:", error);
+    }
+  }, [messages]);
+
+  const handleNewChat = () => {
+    const newMessages = [
+      {
+        id: 1,
+        text: "안녕하세요! 무엇을 도와드릴까요?",
+        isBot: true,
+        timestamp: new Date(),
+      },
+    ];
+    setMessages(newMessages);
+    // 새 대화 시작 시 localStorage도 업데이트
+    try {
+      localStorage.setItem(
+        window.location.pathname,
+        JSON.stringify(newMessages)
+      );
+    } catch (error) {
+      console.error("새 대화 내용을 저장하는데 실패했습니다:", error);
+    }
+  };
+
+  const handleTemplateClick = (template: string) => {
+    setNewMessage(template);
+    // 입력 필드에 포커스
+    inputRef.current?.focus();
+  };
+
   return (
     <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center">
       <div className="bg-white rounded-lg w-[90%] sm:w-full max-w-md h-[90vh] sm:h-[700px] sm:max-h-[80vh] shadow-lg flex flex-col">
         {/* 헤더 */}
         <div className="p-4 border-b flex justify-between items-center">
-          {/* <h3 className="text-lg font-semibold text-gray-900">채팅 상담</h3> */}
+          <button
+            onClick={handleNewChat}
+            className="text-gray-500 hover:text-gray-700 p-2 rounded-full hover:bg-gray-100"
+            title="새 대화 시작"
+          >
+            <FaPlus className="h-5 w-5" />
+          </button>
           <button
             onClick={onClose}
             className="text-gray-500 hover:text-gray-700"
@@ -378,6 +482,41 @@ const ChatModal: React.FC<ChatModalProps> = ({ onClose }) => {
 
         {/* 채팅 메시지 영역 */}
         <div className="flex-1 p-4 overflow-y-auto">
+          {messages.length === 1 && messages[0].isBot && (
+            <div className="mb-4 space-y-3">
+              <h3 className="text-sm font-medium text-gray-500">템플릿 질문</h3>
+              <div className="grid grid-cols-1 gap-2">
+                <button
+                  onClick={() => handleTemplateClick("한줄로 쉽게 요약해줘")}
+                  className="p-3 text-left bg-sky-50 hover:bg-sky-100 rounded-lg transition-colors"
+                >
+                  <span className="text-gray-700">한줄로 쉽게 요약해줘</span>
+                </button>
+                <button
+                  onClick={() =>
+                    handleTemplateClick(
+                      "이 내용에서 만들 수 있는 컨텐츠 제목 3가지 뽑아줘"
+                    )
+                  }
+                  className="p-3 text-left bg-sky-50 hover:bg-sky-100 rounded-lg transition-colors"
+                >
+                  <span className="text-gray-700">
+                    이 내용에서 만들 수 있는 컨텐츠 제목 3가지 뽑아줘
+                  </span>
+                </button>
+                <button
+                  onClick={() =>
+                    handleTemplateClick("문서의 내용을 Mermaid 로 형상화 해줘")
+                  }
+                  className="p-3 text-left bg-sky-50 hover:bg-sky-100 rounded-lg transition-colors"
+                >
+                  <span className="text-gray-700">
+                    문서의 내용을 Mermaid 로 형상화 해줘
+                  </span>
+                </button>
+              </div>
+            </div>
+          )}
           <div className="space-y-4">
             {messages.map((message) => (
               <div

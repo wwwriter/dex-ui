@@ -2,7 +2,7 @@ import { useState } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useParams } from "react-router-dom";
 
-import { FiYoutube } from "react-icons/fi";
+import { FiYoutube, FiX } from "react-icons/fi";
 import { runDifyWorkflow } from "../api/dify";
 
 const SUMMARY_URL = "https://data-api.soneuro-handmade.com";
@@ -70,7 +70,16 @@ const YouTubeSummaryButton = () => {
       {isModalOpen && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
           <div className="bg-white rounded-lg shadow-xl p-6 w-full max-w-md mx-4 max-h-[90vh] overflow-auto">
-            <h2 className="text-xl font-semibold mb-4">유튜브 영상 요약</h2>
+            <div className="flex justify-between items-center mb-4">
+              <h2 className="text-xl font-semibold">유튜브 영상 요약</h2>
+              <button
+                onClick={() => setIsModalOpen(false)}
+                className="text-gray-500 hover:text-gray-700"
+                aria-label="닫기"
+              >
+                <FiX size={24} />
+              </button>
+            </div>
             <div className="mb-4">
               <form onSubmit={handleSubmit} className="flex gap-2">
                 <input
@@ -88,9 +97,9 @@ const YouTubeSummaryButton = () => {
                 />
                 <button
                   type="submit"
-                  className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:bg-blue-300"
+                  className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:bg-blue-300 min-w-[50px]"
                 >
-                  요약하기
+                  요약
                 </button>
               </form>
               {error && (

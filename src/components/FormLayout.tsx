@@ -34,7 +34,7 @@ const FormLayout = ({
   return (
     <div className="container mx-auto p-4">
       <div className="flex justify-between items-center mb-6">
-        <h2 className="text-xl md:text-2xl font-semibold text-gray-900">
+        <h2 className="text-xl md:text-xl font-semibold text-gray-900">
           {isEditing ? `${title} 편집` : `새 ${title} 생성`}
         </h2>
         {additionalActions}

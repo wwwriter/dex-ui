@@ -5,6 +5,7 @@ import { createDetailQueryKey } from "../../api/query-keys";
 import MermaidDiagram from "../../components/MermaidDiagram";
 import MarkdownContent from "../../components/MarkdownContent";
 import { removeThinkTags } from "../../utils/textUtils";
+import ProblemMetricTable from "./ProblemMetricTable";
 
 const ProblemDetail = () => {
   const { id, ontology_id } = useParams<{ id: string; ontology_id: string }>();
@@ -39,7 +40,7 @@ const ProblemDetail = () => {
   return (
     <div className="container mx-auto relative">
       <div className="flex justify-between items-center p-4 mb-2">
-        <h2 className="text-xl md:text-2xl font-semibold text-gray-900">
+        <h2 className="text-xl md:text-xl font-semibold text-gray-900">
           {problem.name}
         </h2>
         <div className="flex flex-col space-y-2 md:flex-row md:space-y-0 md:space-x-2 min-w-[80px]">
@@ -61,15 +62,32 @@ const ProblemDetail = () => {
       </div>
 
       <div>
-        <div>
-          {/* <h3 className="text-lg font-medium text-gray-900 mb-1 p-4">설명</h3> */}
-          <MarkdownContent
-            content={removeThinkTags(problem.description || "")}
-          />
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+          <div>
+            <h3 className="text-lg font-medium text-gray-900 mb-2 p-4">설명</h3>
+            <div className="p-4">
+              <MarkdownContent
+                content={removeThinkTags(problem.description || "")}
+              />
+            </div>
+          </div>
+          <div>
+            <h3 className="text-lg font-medium text-gray-900 mb-2 p-4">
+              Mermaid 다이어그램
+            </h3>
+            <div className="p-4">
+              <MermaidDiagram id={id} mermaidContent={problem.mermaid} />
+            </div>
+          </div>
         </div>
       </div>
 
-      <MermaidDiagram id={id} mermaidContent={problem.mermaid} />
+      <div className="mt-8">
+        <ProblemMetricTable
+          ontology_id={Number(ontology_id)}
+          problem_id={Number(id)}
+        />
+      </div>
     </div>
   );
 };

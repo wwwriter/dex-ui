@@ -19,6 +19,7 @@ import SearchButton from "../../components/SearchButton";
 import SearchModal from "../../components/SearchModal";
 import { useUser } from "../../hooks/useUser";
 import ItemCard from "../../components/ItemCard";
+import ListPageLayout from "../../components/ListPageLayout";
 
 const KnowledgeList = () => {
   const { ontology_id } = useParams<{ ontology_id: string }>();
@@ -31,6 +32,13 @@ const KnowledgeList = () => {
   const [searchQuery, setSearchQuery] = useState(currentSearchQuery);
   const [targetOntologyId, setTargetOntologyId] = useState<string>("");
   const [isCommandKeyPressed, setIsCommandKeyPressed] = useState(false);
+  const [commandKeyTimer, setCommandKeyTimer] = useState<NodeJS.Timeout | null>(
+    null
+  );
+  const [isLongPressing, setIsLongPressing] = useState(false);
+  const [longPressTimer, setLongPressTimer] = useState<NodeJS.Timeout | null>(
+    null
+  );
 
   const queryClient = useQueryClient();
   const navigate = useNavigate();
@@ -72,10 +80,10 @@ const KnowledgeList = () => {
   const knowledgeWithBookmarks = knowledgeList.map((knowledge) => ({
     ...knowledge,
     isBookmarked: bookmarks.some(
-      (bookmark) => bookmark.knowledge_id === knowledge.id,
+      (bookmark) => bookmark.knowledge_id === knowledge.id
     ),
     knowledge_bookmarks: bookmarks.filter(
-      (bookmark) => bookmark.knowledge_id === knowledge.id,
+      (bookmark) => bookmark.knowledge_id === knowledge.id
     ),
   }));
 
@@ -107,7 +115,7 @@ const KnowledgeList = () => {
       targetOntologyId: number;
     }) => {
       const promises = data.knowledgeIds.map((id) =>
-        knowledgeApi.patch(id, { ontology_id: data.targetOntologyId }),
+        knowledgeApi.patch(id, { ontology_id: data.targetOntologyId })
       );
       return Promise.all(promises);
     },
@@ -154,24 +162,24 @@ const KnowledgeList = () => {
 
   // Command 키 감지 이벤트 리스너
   useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === "Meta" || e.key === "Control") {
+    const handleKeyDown = (e: globalThis.KeyboardEvent) => {
+      if (e.metaKey || e.ctrlKey) {
         setIsCommandKeyPressed(true);
       }
     };
 
-    const handleKeyUp = (e: KeyboardEvent) => {
-      if (e.key === "Meta" || e.key === "Control") {
+    const handleKeyUp = (e: globalThis.KeyboardEvent) => {
+      if (!e.metaKey && !e.ctrlKey) {
         setIsCommandKeyPressed(false);
       }
     };
 
-    window.addEventListener("keydown", handleKeyDown as any);
-    window.addEventListener("keyup", handleKeyUp as any);
+    document.addEventListener("keydown", handleKeyDown);
+    document.addEventListener("keyup", handleKeyUp);
 
     return () => {
-      window.removeEventListener("keydown", handleKeyDown as any);
-      window.removeEventListener("keyup", handleKeyUp as any);
+      document.removeEventListener("keydown", handleKeyDown);
+      document.removeEventListener("keyup", handleKeyUp);
     };
   }, []);
 
@@ -190,10 +198,10 @@ const KnowledgeList = () => {
   const handleItemClick = useCallback(
     (knowledge: Knowledge, e: React.MouseEvent) => {
       e.preventDefault();
+
       if (selectedItems.length > 0 || isCommandKeyPressed) {
         toggleItemSelection(knowledge.id);
       } else {
-        // 선택 모드가 아닐 때만 링크 이동 허용
         navigate(`/ontologies/${ontology_id}/knowledge/${knowledge.id}`);
       }
     },
@@ -203,7 +211,24 @@ const KnowledgeList = () => {
       toggleItemSelection,
       ontology_id,
       navigate,
-    ],
+    ]
+  );
+
+  // 롱프레스 핸들러
+  const handleMouseDown = useCallback(
+    (knowledge: Knowledge) => {
+      const timer = setTimeout(() => {
+        toggleItemSelection(knowledge.id);
+      }, 500); // 500ms 롱프레스
+
+      const handleMouseUp = () => {
+        clearTimeout(timer);
+        document.removeEventListener("mouseup", handleMouseUp);
+      };
+
+      document.addEventListener("mouseup", handleMouseUp);
+    },
+    [toggleItemSelection]
   );
 
   // 선택 모드 종료
@@ -245,92 +270,67 @@ const KnowledgeList = () => {
     }
   };
 
-  if (isLoading) {
-    return <div className="text-center py-10">데이터를 불러오는 중...</div>;
-  }
-
-  if (error) {
-    return (
-      <div className="text-center py-10 text-red-600">
-        오류가 발생했습니다: {String(error)}
-      </div>
-    );
-  }
-
   const isInSelectionMode = selectedItems.length > 0;
 
   return (
-    <div className="container mx-auto p-4 ">
-      <div className="flex justify-between items-center mb-6">
-        <h2 className="text-2xl font-semibold text-gray-900">지식 목록</h2>
-        <div className="flex items-center gap-2">
-          {isInSelectionMode && (
-            <>
+    <ListPageLayout
+      title="지식 목록"
+      addButtonText="지식"
+      addButtonLink={`/ontologies/${ontology_id}/knowledge/new`}
+      isEmpty={knowledgeList.length === 0}
+      emptyMessage="표시할 지식이 없습니다."
+      emptyButtonLink={`/ontologies/${ontology_id}/knowledge/new`}
+      emptyButtonText="첫 번째 지식 추가하기"
+      isLoading={isLoading}
+      error={error}
+    >
+      <div className="col-span-full flex justify-end gap-2 ">
+        {isInSelectionMode && (
+          <>
+            <button
+              onClick={exitSelectionMode}
+              className="flex items-center gap-2 bg-gray-500 text-white px-4 py-2 rounded-lg hover:bg-gray-600 transition-colors"
+            >
+              취소
+            </button>
+            {selectedItems.length > 0 && (
               <button
-                onClick={exitSelectionMode}
-                className="flex items-center gap-2 bg-gray-500 text-white px-4 py-2 rounded-lg hover:bg-gray-600 transition-colors"
+                onClick={() => setIsMoveModalOpen(true)}
+                className="flex items-center gap-2 bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition-colors"
               >
-                취소
+                <FiMove />
+                이동
               </button>
-              {selectedItems.length > 0 && (
-                <button
-                  onClick={() => setIsMoveModalOpen(true)}
-                  className="flex items-center gap-2 bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition-colors"
-                >
-                  <FiMove />
-                  이동
-                </button>
-              )}
-            </>
-          )}
-          <SearchButton
-            currentSearchQuery={currentSearchQuery}
-            onClick={() => setIsSearchModalOpen(true)}
-            onReset={handleResetSearch}
-          />
-          <button
-            onClick={() => navigate(`/ontologies/${ontology_id}/knowledge/new`)}
-            className="flex items-center gap-2 bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors"
-          >
-            <FiPlus />새 지식 추가
-          </button>
-        </div>
+            )}
+          </>
+        )}
+        <SearchButton
+          currentSearchQuery={currentSearchQuery}
+          onClick={() => setIsSearchModalOpen(true)}
+          onReset={handleResetSearch}
+        />
       </div>
 
-      {knowledgeWithBookmarks.length === 0 ? (
-        <div className="text-center py-10 bg-white rounded-lg shadow-md">
-          <p className="text-gray-500">표시할 지식이 없습니다.</p>
-          <Link
-            to={`/ontologies/${ontology_id}/knowledge/new`}
-            className="inline-block mt-4 text-blue-600 hover:underline"
-          >
-            첫 번째 지식 추가하기
-          </Link>
-        </div>
-      ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 overflow-y-auto max-h-[80vh]">
-          {sortedKnowledge.map((knowledge) => (
-            <ItemCard
-              key={knowledge.id}
-              id={knowledge.id}
-              name={knowledge.name}
-              description={knowledge.description || ""}
-              isBookmarked={knowledge.isBookmarked}
-              ontologyId={ontology_id || ""}
-              itemType="knowledge"
-              onBookmark={(e) => handleBookmark(e, knowledge)}
-              onItemClick={(e) => handleItemClick(knowledge, e)}
-              onDelete={() => handleDelete(knowledge.id)}
-              created_at={knowledge.created_at}
-            />
-          ))}
-        </div>
-      )}
+      {sortedKnowledge.map((knowledge) => (
+        <ItemCard
+          key={knowledge.id}
+          id={knowledge.id}
+          name={knowledge.name}
+          description={knowledge.description || ""}
+          isBookmarked={knowledge.isBookmarked}
+          ontologyId={ontology_id || ""}
+          itemType="knowledge"
+          onBookmark={(e) => handleBookmark(e, knowledge)}
+          onItemClick={(e) => handleItemClick(knowledge, e)}
+          onMouseDown={() => handleMouseDown(knowledge)}
+          onDelete={() => handleDelete(knowledge.id)}
+          created_at={knowledge.created_at}
+          isSelected={selectedItems.includes(knowledge.id)}
+        />
+      ))}
 
-      {/* YouTube 요약 버튼 컴포넌트 */}
       <YouTubeSummaryButton />
 
-      {/* 검색 모달 */}
       <SearchModal
         isOpen={isSearchModalOpen}
         onClose={() => setIsSearchModalOpen(false)}
@@ -339,7 +339,6 @@ const KnowledgeList = () => {
         onSearch={handleSearch}
       />
 
-      {/* 지식 이동 모달 */}
       {isMoveModalOpen && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center">
           <div className="bg-white rounded-lg p-6 w-full max-w-md">
@@ -391,7 +390,7 @@ const KnowledgeList = () => {
           </div>
         </div>
       )}
-    </div>
+    </ListPageLayout>
   );
 };
 

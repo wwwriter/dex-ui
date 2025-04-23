@@ -21,7 +21,8 @@ const ProblemForm = ({ initialData, isEditing = false }: ProblemFormProps) => {
 
   const [formData, setFormData] = useState<Partial<Problem>>({
     name: "",
-    label: "",
+
+    mermaid: "",
     description: INITIAL_PROBLEM_DATA,
     ontology_id: Number(ontology_id),
   });
@@ -43,7 +44,8 @@ const ProblemForm = ({ initialData, isEditing = false }: ProblemFormProps) => {
     if (isEditing && problemData) {
       setFormData({
         name: problemData.name,
-        label: problemData.label,
+
+        mermaid: problemData.mermaid,
         description: problemData.description,
         ontology_id: problemData.ontology_id,
       });
@@ -52,7 +54,7 @@ const ProblemForm = ({ initialData, isEditing = false }: ProblemFormProps) => {
 
   // 입력 변경 핸들러
   const handleChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
   ) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
@@ -74,7 +76,7 @@ const ProblemForm = ({ initialData, isEditing = false }: ProblemFormProps) => {
           formData as Omit<
             Problem,
             "id" | "created_at" | "updated_at" | "deleted_at"
-          >,
+          >
         );
       }
       navigate(`/ontologies/${ontology_id}/problems`);
@@ -101,11 +103,34 @@ const ProblemForm = ({ initialData, isEditing = false }: ProblemFormProps) => {
         required
       />
 
-      <MarkdownEditor
-        label="설명"
-        value={formData.description || ""}
-        onChange={handleDescriptionChange}
-      />
+      <div className="w-full">
+        <MarkdownEditor
+          label="설명"
+          value={formData.description || ""}
+          onChange={handleDescriptionChange}
+          height={600}
+        />
+      </div>
+
+      <div className="w-full">
+        <FormInput
+          label="Mermaid 다이어그램"
+          name="mermaid"
+          value={formData.mermaid || ""}
+          onChange={handleChange}
+          type="textarea"
+          rows={29}
+          placeholder="graph TD;
+    A-->B;
+    A-->C;
+    B-->D;
+    C-->D;"
+          className="font-mono text-sm"
+        />
+        <p className="mt-1 text-xs text-gray-500">
+          Mermaid 마크다운 형식으로 다이어그램을 작성하세요.
+        </p>
+      </div>
 
       <div className="flex justify-end space-x-4">
         <FormButton

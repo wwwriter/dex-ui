@@ -25,9 +25,8 @@ export interface LinkType {
   label: string | null;
   description: string | null;
   relationship_type: "foreign-key" | "dataset";
-  source_object_link_property: string;
-  target_object_link_property: string;
-  semantic_label: string;
+  source_object_link_property?: string | null;
+  target_object_link_property?: string | null;
   created_at: string;
   updated_at: string;
   ontology_id: number | null;
@@ -68,11 +67,8 @@ export interface AuthResponse {
 export interface Problem {
   id: number;
   name: string;
-  label: string | null;
   description: string | null;
-  summary: string | null;
   mermaid: string | null;
-  link: string | null;
   ontology_id: number | null;
   created_at: string;
   updated_at: string;
@@ -81,13 +77,24 @@ export interface Problem {
   isBookmarked?: boolean;
 }
 
+export type PropertyDataType =
+  | "string"
+  | "number"
+  | "boolean"
+  | "date"
+  | "timestamp";
+export type PropertyDimensionType = "time" | "categorical";
+export type PropertyEntityType = "primary" | "foreign" | "unique" | "natural";
+
 export interface Property {
   id: number;
   name: string;
-  label: string | null;
+
   description: string | null;
-  property_type: string;
-  config: any | null;
+  data_type: PropertyDataType;
+  dimension_type?: PropertyDimensionType | null;
+  entity_type?: PropertyEntityType | null;
+
   object_type_id: number | null;
   ontology_id: number | null;
   created_at: string;
@@ -97,10 +104,27 @@ export interface Property {
 
 export interface ProblemMetric {
   id: number;
-  problem_id: number;
   metric_id: number;
-  ontology_id: number | null;
+  problem_id: number;
+  ontology_id: number;
   created_at: string;
   updated_at: string;
+  deleted_at: string | null;
+}
+
+export interface MetricObjectTypeRelation {
+  id: number;
+  object_type_id: number;
+  metric_id: number;
+  ontology_id: number;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface MetricRelationship {
+  id: number;
+  ontology_id: number;
+  source_metric_id: number;
+  target_metric_id: number | null;
   deleted_at: string | null;
 }

@@ -1,15 +1,15 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { Link, useNavigate, useParams } from "react-router-dom";
+import { Link, useParams } from "react-router-dom";
 import { objectTypeApi } from "../../api/dexApi";
 import { ObjectType } from "../../types";
-import { FiPlus, FiLayers } from "react-icons/fi";
+import { FiLayers } from "react-icons/fi";
 import { createListQueryKey } from "../../api/query-keys";
 import DropdownMenu from "../../components/DropdownMenu";
+import ListPageLayout from "../../components/ListPageLayout";
 
 const ObjectTypeList = () => {
   const { ontology_id } = useParams<{ ontology_id: string }>();
   const queryClient = useQueryClient();
-  const navigate = useNavigate();
 
   // 현재 온톨로지에 해당하는 객체 타입만 가져오기
   const {
@@ -18,10 +18,10 @@ const ObjectTypeList = () => {
     error,
   } = useQuery({
     queryKey: createListQueryKey("objectTypes", {
-      limit: 40,
+      limit: 200,
       filters: { ontology_id: Number(ontology_id) },
     }),
-    queryFn: () => objectTypeApi.getAll(Number(ontology_id), { limit: 40 }),
+    queryFn: () => objectTypeApi.getAll(Number(ontology_id), { limit: 200 }),
   });
 
   const deleteMutation = useMutation({
@@ -37,53 +37,27 @@ const ObjectTypeList = () => {
     }
   };
 
-  if (isLoading) {
-    return <div className="text-center py-10">데이터를 불러오는 중...</div>;
-  }
-
-  if (error) {
-    return (
-      <div className="text-center py-10 text-red-600">
-        오류가 발생했습니다: {String(error)}
-      </div>
-    );
-  }
-
   return (
-    <div className="container mx-auto p-4">
-      <div className="flex justify-between items-center mb-6">
-        <h2 className="text-2xl font-semibold text-gray-900">객체 타입 목록</h2>
-        <Link
-          to={`/ontologies/${ontology_id}/object-types/new`}
-          className="flex items-center bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors"
-        >
-          <FiPlus className="mr-2" />새 객체 타입 추가
-        </Link>
-      </div>
-
-      {objectTypes.length === 0 ? (
-        <div className="text-center py-10 bg-white rounded-lg shadow-md">
-          <p className="text-gray-500">표시할 객체 타입이 없습니다.</p>
-          <Link
-            to={`/ontologies/${ontology_id}/object-types/new`}
-            className="inline-block mt-4 text-blue-600 hover:underline"
-          >
-            첫 번째 객체 타입 추가하기
-          </Link>
+    <ListPageLayout
+      title="객체 타입 목록"
+      addButtonText="객체 타입"
+      addButtonLink={`/ontologies/${ontology_id}/object-types/new`}
+      isEmpty={objectTypes.length === 0}
+      emptyMessage="표시할 객체 타입이 없습니다."
+      emptyButtonLink={`/ontologies/${ontology_id}/object-types/new`}
+      emptyButtonText="첫 번째 객체 타입 추가하기"
+      isLoading={isLoading}
+      error={error}
+    >
+      {objectTypes.map((objectType) => (
+        <div key={objectType.id} className="relative">
+          <div className="absolute top-4 right-4">
+            <DropdownMenu onDelete={() => handleDelete(objectType.id)} />
+          </div>
+          <ObjectTypeCard objectType={objectType} />
         </div>
-      ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {objectTypes.map((objectType) => (
-            <div key={objectType.id} className="relative">
-              <div className="absolute top-4 right-4">
-                <DropdownMenu onDelete={() => handleDelete(objectType.id)} />
-              </div>
-              <ObjectTypeCard objectType={objectType} />
-            </div>
-          ))}
-        </div>
-      )}
-    </div>
+      ))}
+    </ListPageLayout>
   );
 };
 

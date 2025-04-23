@@ -5,6 +5,7 @@ import {
   FiBook,
   FiLayers,
   FiBarChart2,
+  FiGrid,
 } from "react-icons/fi";
 
 const NavigationTabs = () => {
