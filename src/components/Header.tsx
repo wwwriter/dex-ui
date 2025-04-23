@@ -13,7 +13,7 @@ const Header: React.FC = () => {
   const param = useParams();
   const ontologyMatch = matchPath(
     { path: "/ontologies/:ontology_id/*" },
-    location.pathname
+    location.pathname,
   );
 
   const ontology_id = ontologyMatch?.params?.ontology_id;
@@ -25,10 +25,13 @@ const Header: React.FC = () => {
 
   const ontologyMap = useMemo(() => {
     if (!ontologies) return {};
-    return ontologies.reduce((acc, ontology) => {
-      acc[ontology.id] = ontology;
-      return acc;
-    }, {} as Record<number, Ontology>);
+    return ontologies.reduce(
+      (acc, ontology) => {
+        acc[ontology.id] = ontology;
+        return acc;
+      },
+      {} as Record<number, Ontology>,
+    );
   }, [ontologies]);
 
   const handleOpenChat = () => {

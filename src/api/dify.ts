@@ -14,7 +14,7 @@ const PLAYLIST_SUMMARY_API_KEY = "app-QCIYng868Jp37vRe4vyvNsUN";
 
 export async function runDifyWorkflow(
   input: string,
-  ontology_id: number
+  ontology_id: number,
 ): Promise<Response | DifyRunWorkflowResponse> {
   const endpoint = "https://dify.soneuro-handmade.com/v1/workflows/run";
 
@@ -55,7 +55,7 @@ export async function runDifyWorkflow(
  */
 export async function handleStreamingResponse(
   response: Response,
-  onChunk: (data: any) => void
+  onChunk: (data: any) => void,
 ): Promise<void> {
   const reader = response.body?.getReader();
   if (!reader) {

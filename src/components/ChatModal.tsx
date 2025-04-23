@@ -67,7 +67,7 @@ const ChatModal: React.FC<ChatModalProps> = ({ onClose }) => {
               </ReactMarkdown>
             </div>
           )}
-        </div>
+        </div>,
       );
 
       // </think> 이후의 내용 추가
@@ -77,7 +77,7 @@ const ChatModal: React.FC<ChatModalProps> = ({ onClose }) => {
         segments.push(
           <ReactMarkdown key="remaining" components={MarkdownComponents}>
             {remainingText}
-          </ReactMarkdown>
+          </ReactMarkdown>,
         );
       }
     }

@@ -22,9 +22,9 @@ const NavigationTabs = () => {
   const baseUrl = `/ontologies/${ontologyId}`;
 
   const tabs = [
-    { name: "Ontology", path: `${baseUrl}`, icon: FiActivity },
+    { name: "Ontology", path: `${baseUrl}/graph`, icon: FiActivity },
     { name: "Problem", path: `${baseUrl}/problems`, icon: FiAlertCircle },
-    { name: "Knowledge", path: `${baseUrl}/knowlege`, icon: FiBook },
+    { name: "Knowledge", path: `${baseUrl}/knowledge`, icon: FiBook },
     { name: "Object", path: `${baseUrl}/object-types`, icon: FiLayers },
     { name: "Metric", path: `${baseUrl}/metrics`, icon: FiBarChart2 },
   ];
@@ -39,7 +39,7 @@ const NavigationTabs = () => {
               key={tab.path}
               href={tab.path}
               className={`py-3 px-2 text-center flex-1 flex flex-col items-center ${
-                path === tab.path
+                path.startsWith(tab.path)
                   ? "text-blue-600 border-t-2 border-blue-600"
                   : "text-gray-500"
               }`}
@@ -59,7 +59,7 @@ const NavigationTabs = () => {
               key={tab.path}
               href={tab.path}
               className={`py-4 w-full flex flex-col items-center ${
-                path === tab.path
+                path.startsWith(tab.path)
                   ? "bg-gray-100 text-blue-600 border-l-4 border-blue-600"
                   : "text-gray-700"
               }`}

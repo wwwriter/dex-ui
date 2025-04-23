@@ -8,12 +8,14 @@ export type Domain =
   | "knowledge"
   | "objectTypes"
   | "properties"
-  | "problemMetrics";
+  | "problemMetrics"
+  | "problemBookmarks"
+  | "knowledgeBookmarks";
 
 // LIST 쿼리 키 생성 함수
 export const createListQueryKey = (
   domain: Domain,
-  params?: ApiRequest
+  params?: ApiRequest,
 ): [Domain, ApiRequest | undefined] => {
   return [domain, params];
 };
@@ -22,7 +24,7 @@ export const createListQueryKey = (
 export const createDetailQueryKey = (
   domain: Domain,
   id: number,
-  params?: DetailApiRequest
+  params?: DetailApiRequest,
 ): [Domain, number, DetailApiRequest | undefined] => {
   return [domain, id, params];
 };

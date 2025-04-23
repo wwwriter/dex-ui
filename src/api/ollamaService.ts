@@ -26,7 +26,7 @@ const getPrompt = (ontology: Record<string, any>) => `
 export const fetchOllamaQueryStream = async (
   prompt: string,
   ontology: Record<string, any>,
-  onChunk: (chunk: string) => void
+  onChunk: (chunk: string) => void,
 ): Promise<string> => {
   try {
     const promptString = `${getPrompt(ontology)}
@@ -56,7 +56,7 @@ ${prompt}
           prompt: promptString,
           stream: true, // 스트리밍 모드 활성화
         }),
-      }
+      },
     );
 
     if (!response.body) {

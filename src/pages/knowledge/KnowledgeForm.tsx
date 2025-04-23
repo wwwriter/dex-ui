@@ -3,9 +3,12 @@ import { useNavigate, useParams } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { Knowledge } from "../../types";
 import { knowledgeApi } from "../../api/dexApi";
-import MDEditor from "@uiw/react-md-editor";
 import { createDetailQueryKey } from "../../api/query-keys";
 import { ChevronDownIcon, ChevronUpIcon } from "@heroicons/react/24/outline";
+import MarkdownEditor from "../../components/MarkdownEditor";
+import FormInput from "../../components/FormInput";
+import FormButton from "../../components/FormButton";
+import FormLayout from "../../components/FormLayout";
 
 interface KnowledgeFormProps {
   initialData?: Knowledge;
@@ -63,7 +66,7 @@ const KnowledgeForm = ({
 
   // 입력 변경 핸들러
   const handleChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
   ) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
@@ -71,7 +74,7 @@ const KnowledgeForm = ({
 
   // 마크다운 에디터 변경 핸들러
   const handleDescriptionChange = (key: string, value?: string) => {
-    setFormData((prev) => ({ ...prev, summary: value || "" }));
+    setFormData((prev) => ({ ...prev, [key]: value || "" }));
   };
 
   // 제출 핸들러
@@ -85,13 +88,13 @@ const KnowledgeForm = ({
           formData as Omit<
             Knowledge,
             "id" | "created_at" | "updated_at" | "deleted_at"
-          >
+          >,
         );
       }
       if (id) {
-        navigate(`/ontologies/${ontology_id}/knowlege/${id}`);
+        navigate(`/ontologies/${ontology_id}/knowledge/${id}`);
       } else {
-        navigate(`/ontologies/${ontology_id}/knowlege`);
+        navigate(`/ontologies/${ontology_id}/knowledge`);
       }
     } catch (error) {
       console.error("지식 저장 중 오류 발생:", error);
@@ -117,7 +120,7 @@ const KnowledgeForm = ({
             title: formData.name,
             content: formData.description,
           }),
-        }
+        },
       );
 
       if (!response.ok) {
@@ -150,149 +153,114 @@ const KnowledgeForm = ({
   }
 
   return (
-    <div className="container mx-auto p-4">
-      <div className="flex justify-between items-center mb-6">
-        <h2 className="text-2xl font-semibold text-gray-900">
-          {isEditing ? "지식 편집" : "새 지식 생성"}
-        </h2>
-        {isEditing && (
-          <button
+    <FormLayout
+      title="지식"
+      onSubmit={handleSubmit}
+      onCancel={() => navigate(`/ontologies/${ontology_id}/knowledge`)}
+      isEditing={isEditing}
+      isLoading={isEditing && isLoadingKnowledge}
+      error={isEditing ? knowledgeError : null}
+      additionalActions={
+        isEditing && (
+          <FormButton
             type="button"
             onClick={handleSummarize}
             disabled={isSummarizing}
-            className="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 disabled:bg-green-300"
+            variant="primary"
           >
             {isSummarizing ? "요약 중..." : "요약하기"}
-          </button>
-        )}
+          </FormButton>
+        )
+      }
+    >
+      <div className="flex flex-col lg:flex-row gap-4 mb-4">
+        <div className="w-full lg:w-1/2">
+          <FormInput
+            label="이름"
+            name="name"
+            value={formData.name || ""}
+            onChange={handleChange}
+            required
+          />
+        </div>
+        <div className="w-full lg:w-1/2">
+          <FormInput
+            label="링크"
+            name="link"
+            value={formData.link || ""}
+            onChange={handleChange}
+            type="url"
+            placeholder="https://example.com"
+          />
+        </div>
       </div>
 
-      <form
-        onSubmit={handleSubmit}
-        className="bg-white rounded-lg shadow-md p-4"
-      >
-        <div className="flex flex-col lg:flex-row gap-4 mb-4">
-          <div className="w-full lg:w-1/2">
-            <label
-              htmlFor="name"
-              className="block text-sm font-medium text-gray-700 mb-1"
-            >
-              이름 *
-            </label>
-            <input
-              type="text"
-              id="name"
-              name="name"
-              value={formData.name || ""}
-              onChange={handleChange}
-              required
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500"
-            />
-          </div>
-          <div className="w-full lg:w-1/2">
-            <label
-              htmlFor="link"
-              className="block text-sm font-medium text-gray-700 mb-1"
-            >
-              링크
-            </label>
-            <input
-              type="url"
-              id="link"
-              name="link"
-              value={formData.link || ""}
-              onChange={handleChange}
-              placeholder="https://example.com"
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500"
-            />
-          </div>
+      <div className="flex flex-col lg:flex-row gap-4">
+        <div className="w-full lg:w-1/2">
+          <MarkdownEditor
+            label="요약"
+            value={formData.summary || ""}
+            onChange={(value) => handleDescriptionChange("summary", value)}
+            height={600}
+          />
         </div>
+        <div className="w-full lg:w-1/2">
+          <button
+            type="button"
+            onClick={() => setIsDescriptionOpen(!isDescriptionOpen)}
+            className="flex items-center justify-between w-full px-4 py-2 text-left bg-gray-50 rounded-md hover:bg-gray-100 mb-4"
+          >
+            <span className="text-sm font-medium text-gray-700">설명</span>
+            {isDescriptionOpen ? (
+              <ChevronUpIcon className="w-5 h-5 text-gray-500" />
+            ) : (
+              <ChevronDownIcon className="w-5 h-5 text-gray-500" />
+            )}
+          </button>
+          {isDescriptionOpen && (
+            <MarkdownEditor
+              label=""
+              value={formData.description || ""}
+              onChange={(value) =>
+                handleDescriptionChange("description", value)
+              }
+              height={600}
+            />
+          )}
+        </div>
+      </div>
 
-        <div className="flex flex-col lg:flex-row gap-4">
-          <div className="w-full lg:w-1/2">
-            <label
-              htmlFor="summary"
-              className="block text-sm font-medium text-gray-700 mb-1"
-            >
-              요약
-            </label>
-            <div data-color-mode="light">
-              <MDEditor
-                preview="live"
-                value={removeThinkTags(formData.summary || "")}
-                onChange={(value) => handleDescriptionChange("summary", value)}
-                height={600}
-              />
-            </div>
-          </div>
-          <div className="mb-4">
-            <button
-              type="button"
-              onClick={() => setIsDescriptionOpen(!isDescriptionOpen)}
-              className="flex items-center justify-between w-full px-4 py-2 text-left bg-gray-50 rounded-md hover:bg-gray-100"
-            >
-              <span className="text-sm font-medium text-gray-700">설명</span>
-              {isDescriptionOpen ? (
-                <ChevronUpIcon className="w-5 h-5 text-gray-500" />
-              ) : (
-                <ChevronDownIcon className="w-5 h-5 text-gray-500" />
-              )}
-            </button>
-            <div data-color-mode="light">
-              <MDEditor
-                preview="live"
-                value={removeThinkTags(formData.description || "")}
-                onChange={(value) =>
-                  handleDescriptionChange("description", value)
-                }
-                height={600}
-              />
-            </div>
-          </div>
-
-          <div className="w-full lg:w-1/2">
-            <label
-              htmlFor="mermaid"
-              className="block text-sm font-medium text-gray-700 mb-1"
-            >
-              Mermaid 다이어그램
-            </label>
-            <textarea
-              id="mermaid"
-              name="mermaid"
-              value={formData.mermaid || ""}
-              onChange={handleChange}
-              rows={29}
-              placeholder="graph TD;
+      <div className="w-full lg:w-1/2">
+        <FormInput
+          label="Mermaid 다이어그램"
+          name="mermaid"
+          value={formData.mermaid || ""}
+          onChange={handleChange}
+          type="textarea"
+          rows={29}
+          placeholder="graph TD;
     A-->B;
     A-->C;
     B-->D;
     C-->D;"
-              className="w-full px-3 py-2 border border-gray-300 rounded-md font-mono text-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
-            />
-            <p className="mt-1 text-xs text-gray-500">
-              Mermaid 마크다운 형식으로 다이어그램을 작성하세요.
-            </p>
-          </div>
-        </div>
+          className="font-mono text-sm"
+        />
+        <p className="mt-1 text-xs text-gray-500">
+          Mermaid 마크다운 형식으로 다이어그램을 작성하세요.
+        </p>
+      </div>
 
-        <div className="flex justify-end space-x-4">
-          <button
-            type="button"
-            onClick={() => navigate(`/ontologies/${ontology_id}/knowlege`)}
-            className="px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50"
-          >
-            취소
-          </button>
-          <button
-            type="submit"
-            className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
-          >
-            {isEditing ? "저장" : "생성"}
-          </button>
-        </div>
-      </form>
-    </div>
+      <div className="flex justify-end space-x-4">
+        <FormButton
+          type="button"
+          onClick={() => navigate(`/ontologies/${ontology_id}/knowledge`)}
+          variant="secondary"
+        >
+          취소
+        </FormButton>
+        <FormButton type="submit">{isEditing ? "저장" : "생성"}</FormButton>
+      </div>
+    </FormLayout>
   );
 };
 

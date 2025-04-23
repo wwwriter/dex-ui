@@ -12,6 +12,7 @@ import NavigationTabs from "./components/NavigationTabs";
 import Login from "./pages/Login";
 import { useUser } from "./hooks/useUser";
 import KnowledgeDetail from "./pages/knowledge/KnowledgeDetail";
+import ProblemDetail from "./pages/problem/ProblemDetail";
 
 const queryClient = new QueryClient();
 
@@ -31,14 +32,17 @@ function AppContent() {
 
   return (
     <div className="min-h-screen w-screen bg-gray-100 flex flex-col">
-      <Header /> 
+      <Header />
 
       <main className="h-[calc(100vh-64px)] overflow-auto md:ml-16 pb-16 md:pb-0">
         <Suspense fallback={<div>로딩 중...</div>}>
           <Routes>
             <Route path="/login" element={<Login />} />
             <Route path="/" element={<OntologyList />} />
-            <Route path="/ontologies/:ontology_id" element={<OntologyView />} />
+            <Route
+              path="/ontologies/:ontology_id/graph"
+              element={<OntologyView />}
+            />
             <Route
               path="/ontologies/:ontology_id/problems"
               element={<ProblemList />}
@@ -48,26 +52,30 @@ function AppContent() {
               element={<ProblemForm />}
             />
             <Route
-              path="/ontologies/:ontology_id/problems/:id"
+              path="/ontologies/:ontology_id/problems/:id/edit"
               element={<ProblemForm isEditing={true} />}
             />
             <Route
-              path="/ontologies/:ontology_id/knowlege"
+              path="/ontologies/:ontology_id/problems/:id"
+              element={<ProblemDetail />}
+            />
+            <Route
+              path="/ontologies/:ontology_id/knowledge"
               element={<KnowledgeList />}
             />
             <Route
-              path="/ontologies/:ontology_id/knowlege/new"
+              path="/ontologies/:ontology_id/knowledge/new"
               element={<KnowledgeForm />}
             />
             <Route
-              path="/ontologies/:ontology_id/knowlege/:id"
+              path="/ontologies/:ontology_id/knowledge/:id"
               element={<KnowledgeDetail />}
             />
             <Route
-              path="/ontologies/:ontology_id/knowlege/:id/edit"
+              path="/ontologies/:ontology_id/knowledge/:id/edit"
               element={<KnowledgeForm isEditing={true} />}
             />
-            
+
             <Route
               path="/ontologies/:ontology_id/object-types"
               element={<ObjectTypeList />}

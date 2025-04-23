@@ -11,18 +11,12 @@ export interface ObjectType {
 export interface Metric {
   id: number;
   name: string;
-  label: string | null;
   description: string | null;
-  is_main_metric: boolean;
+  is_main_metric: 0 | 1;
   type: "simple" | "derived" | "cumulative" | "ratio" | "conversion";
-  type_params: any;
-  filter: string | null;
-  dimension: any | null;
-  children: any | null;
   created_at: string;
   updated_at: string;
   ontology_id: number | null;
-  measure_type_id: number | null;
 }
 
 export interface LinkType {
@@ -62,6 +56,8 @@ export interface Knowledge {
   created_at: string;
   updated_at: string;
   deleted_at: string | null;
+  knowledge_bookmarks?: any[];
+  isBookmarked?: boolean;
 }
 
 export interface AuthResponse {
@@ -74,10 +70,15 @@ export interface Problem {
   name: string;
   label: string | null;
   description: string | null;
+  summary: string | null;
+  mermaid: string | null;
+  link: string | null;
   ontology_id: number | null;
   created_at: string;
   updated_at: string;
   deleted_at: string | null;
+  problem_bookmarks?: any[];
+  isBookmarked?: boolean;
 }
 
 export interface Property {

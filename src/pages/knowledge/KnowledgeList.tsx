@@ -5,83 +5,20 @@ import {
   useParams,
   useSearchParams,
 } from "react-router-dom";
-import { knowledgeApi, ontologyApi } from "../../api/dexApi";
+import {
+  knowledgeApi,
+  knowledgeBookmarkApi,
+  ontologyApi,
+} from "../../api/dexApi";
 import { Knowledge, Ontology } from "../../types";
-import { FiPlus, FiExternalLink, FiMove } from "react-icons/fi";
+import { FiPlus, FiMove } from "react-icons/fi";
 import YouTubeSummaryButton from "../../components/YouTubeSummaryButton";
 import { createListQueryKey } from "../../api/query-keys";
-import DropdownMenu from "../../components/DropdownMenu";
 import { useState, useEffect, useCallback, KeyboardEvent } from "react";
-import { useLongPress } from "use-long-press";
 import SearchButton from "../../components/SearchButton";
 import SearchModal from "../../components/SearchModal";
-
-// KnowledgeItem 컴포넌트를 분리하여 각 아이템별로 훅을 사용
-const KnowledgeItem = ({
-  knowledge,
-  isSelected,
-  ontology_id,
-  isInSelectionMode,
-  isCommandKeyPressed,
-  onItemClick,
-  onDelete,
-  toggleSelection,
-}: {
-  knowledge: Knowledge;
-  isSelected: boolean;
-  ontology_id: string;
-  isInSelectionMode: boolean;
-  isCommandKeyPressed: boolean;
-  onItemClick: (knowledge: Knowledge, e: React.MouseEvent) => void;
-  onDelete: (id: number) => void;
-  toggleSelection: (id: number) => void;
-}) => {
-  // use-long-press 라이브러리를 이용한 롱 프레스 구현
-  const bindLongPress = useLongPress(
-    () => {
-      // 롱 프레스 시 해당 아이템 선택
-      toggleSelection(knowledge.id);
-    },
-    {
-      // 옵션 설정
-      threshold: 500, // 롱 프레스 인식 시간(ms)
-      captureEvent: true, // 이벤트 캡처
-    }
-  );
-
-  return (
-    <div className="relative">
-      <div className="absolute top-4 right-4">
-        <DropdownMenu onDelete={() => onDelete(knowledge.id)} />
-      </div>
-      <div
-        {...bindLongPress()}
-        onClick={(e) => onItemClick(knowledge, e)}
-        className={`block bg-white rounded-lg shadow-md hover:shadow-lg transition-shadow p-4 ${
-          isSelected ? "bg-blue-50 border-2 border-blue-300" : ""
-        }`}
-      >
-        <div className="flex justify-between items-start mb-3 max-w-[290px]">
-          <h3 className="text-lg font-medium text-gray-900">
-            {knowledge.name}
-          </h3>
-        </div>
-
-        {knowledge.description && (
-          <p className="text-gray-600 mb-4 line-clamp-3">
-            {knowledge.description}
-          </p>
-        )}
-
-        <div className="flex justify-between items-center mt-2">
-          <div className="text-xs text-gray-400">
-            생성일: {new Date(knowledge.created_at).toLocaleDateString()}
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-};
+import { useUser } from "../../hooks/useUser";
+import ItemCard from "../../components/ItemCard";
 
 const KnowledgeList = () => {
   const { ontology_id } = useParams<{ ontology_id: string }>();
@@ -97,6 +34,7 @@ const KnowledgeList = () => {
 
   const queryClient = useQueryClient();
   const navigate = useNavigate();
+  const { profile } = useUser();
   const queryKey = createListQueryKey("knowledge", {
     limit: 200,
     sort: "updated_at.desc",
@@ -105,7 +43,10 @@ const KnowledgeList = () => {
       "name[search]": currentSearchQuery,
     },
   });
-  const ontologyQueryKey = createListQueryKey("ontologies", {});
+
+  const bookmarkQueryKey = createListQueryKey("knowledgeBookmarks", {
+    filters: { user_id: profile?.id },
+  });
 
   // 현재 온톨로지에 해당하는 지식만 가져오기
   const {
@@ -122,9 +63,33 @@ const KnowledgeList = () => {
       }),
   });
 
+  const { data: bookmarks = [] } = useQuery({
+    queryKey: bookmarkQueryKey,
+    queryFn: () =>
+      knowledgeBookmarkApi.getAll({ filters: { user_id: profile?.id } }),
+  });
+
+  const knowledgeWithBookmarks = knowledgeList.map((knowledge) => ({
+    ...knowledge,
+    isBookmarked: bookmarks.some(
+      (bookmark) => bookmark.knowledge_id === knowledge.id,
+    ),
+    knowledge_bookmarks: bookmarks.filter(
+      (bookmark) => bookmark.knowledge_id === knowledge.id,
+    ),
+  }));
+
+  const sortedKnowledge = [...knowledgeWithBookmarks].sort((a, b) => {
+    // 북마크된 항목이 위로 오도록 정렬
+    if (a.isBookmarked && !b.isBookmarked) return -1;
+    if (!a.isBookmarked && b.isBookmarked) return 1;
+    // 북마크 상태가 같다면 생성일 기준 내림차순 정렬
+    return new Date(b.updated_at).getTime() - new Date(a.updated_at).getTime();
+  });
+
   // 온톨로지 목록 가져오기
   const { data: ontologyList = [], isLoading: isOntologyLoading } = useQuery({
-    queryKey: ontologyQueryKey,
+    queryKey: createListQueryKey("ontologies", {}),
     queryFn: () => ontologyApi.getAll(),
   });
 
@@ -142,7 +107,7 @@ const KnowledgeList = () => {
       targetOntologyId: number;
     }) => {
       const promises = data.knowledgeIds.map((id) =>
-        knowledgeApi.patch(id, { ontology_id: data.targetOntologyId })
+        knowledgeApi.patch(id, { ontology_id: data.targetOntologyId }),
       );
       return Promise.all(promises);
     },
@@ -152,6 +117,40 @@ const KnowledgeList = () => {
       setIsMoveModalOpen(false);
     },
   });
+
+  const createBookmarkMutation = useMutation({
+    mutationFn: (knowledge_id: number) =>
+      knowledgeBookmarkApi.create({
+        knowledge_id,
+        user_id: Number(profile?.id),
+      }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: bookmarkQueryKey });
+    },
+  });
+
+  const deleteBookmarkMutation = useMutation({
+    mutationFn: (id: number) => knowledgeBookmarkApi.delete(id),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: bookmarkQueryKey });
+    },
+  });
+
+  const handleBookmark = (e: React.MouseEvent, knowledge: Knowledge) => {
+    e.preventDefault();
+    e.stopPropagation();
+
+    if (
+      knowledge.isBookmarked &&
+      knowledge.knowledge_bookmarks &&
+      knowledge.knowledge_bookmarks.length > 0
+    ) {
+      const bookmarkId = knowledge.knowledge_bookmarks[0].id;
+      deleteBookmarkMutation.mutate(bookmarkId);
+    } else {
+      createBookmarkMutation.mutate(knowledge.id);
+    }
+  };
 
   // Command 키 감지 이벤트 리스너
   useEffect(() => {
@@ -195,7 +194,7 @@ const KnowledgeList = () => {
         toggleItemSelection(knowledge.id);
       } else {
         // 선택 모드가 아닐 때만 링크 이동 허용
-        navigate(`/ontologies/${ontology_id}/knowlege/${knowledge.id}`);
+        navigate(`/ontologies/${ontology_id}/knowledge/${knowledge.id}`);
       }
     },
     [
@@ -204,7 +203,7 @@ const KnowledgeList = () => {
       toggleItemSelection,
       ontology_id,
       navigate,
-    ]
+    ],
   );
 
   // 선택 모드 종료
@@ -290,7 +289,7 @@ const KnowledgeList = () => {
             onReset={handleResetSearch}
           />
           <button
-            onClick={() => navigate(`/ontologies/${ontology_id}/knowlege/new`)}
+            onClick={() => navigate(`/ontologies/${ontology_id}/knowledge/new`)}
             className="flex items-center gap-2 bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors"
           >
             <FiPlus />새 지식 추가
@@ -298,11 +297,11 @@ const KnowledgeList = () => {
         </div>
       </div>
 
-      {knowledgeList.length === 0 ? (
+      {knowledgeWithBookmarks.length === 0 ? (
         <div className="text-center py-10 bg-white rounded-lg shadow-md">
           <p className="text-gray-500">표시할 지식이 없습니다.</p>
           <Link
-            to={`/ontologies/${ontology_id}/knowlege/new`}
+            to={`/ontologies/${ontology_id}/knowledge/new`}
             className="inline-block mt-4 text-blue-600 hover:underline"
           >
             첫 번째 지식 추가하기
@@ -310,17 +309,19 @@ const KnowledgeList = () => {
         </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 overflow-y-auto max-h-[80vh]">
-          {knowledgeList.map((knowledge) => (
-            <KnowledgeItem
+          {sortedKnowledge.map((knowledge) => (
+            <ItemCard
               key={knowledge.id}
-              knowledge={knowledge}
-              isSelected={selectedItems.includes(knowledge.id)}
-              ontology_id={ontology_id || ""}
-              isInSelectionMode={isInSelectionMode}
-              isCommandKeyPressed={isCommandKeyPressed}
-              onItemClick={handleItemClick}
-              onDelete={handleDelete}
-              toggleSelection={toggleItemSelection}
+              id={knowledge.id}
+              name={knowledge.name}
+              description={knowledge.description || ""}
+              isBookmarked={knowledge.isBookmarked}
+              ontologyId={ontology_id || ""}
+              itemType="knowledge"
+              onBookmark={(e) => handleBookmark(e, knowledge)}
+              onItemClick={(e) => handleItemClick(knowledge, e)}
+              onDelete={() => handleDelete(knowledge.id)}
+              created_at={knowledge.created_at}
             />
           ))}
         </div>

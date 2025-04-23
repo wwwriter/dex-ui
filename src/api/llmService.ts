@@ -67,7 +67,7 @@ const formatMessagesToVLLM = (messages: ChatMessage[]): VLLMMessage[] => {
 // 채팅 응답을 스트리밍으로 가져오는 함수 (vllm API 사용)
 export const fetchChatResponse = async (
   messages: ChatMessage[],
-  onChunk: (chunk: string) => void
+  onChunk: (chunk: string) => void,
 ): Promise<string> => {
   try {
     // 메시지를 vllm API 형식으로 변환

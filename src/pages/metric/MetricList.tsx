@@ -49,7 +49,7 @@ const MetricList = () => {
   }
 
   // 주요 지표와 일반 지표로 분리
-  const mainMetrics = metrics.filter((metric) => metric.is_main_metric);
+  const mainMetrics = metrics.filter((metric) => !!metric.is_main_metric);
   const otherMetrics = metrics.filter((metric) => !metric.is_main_metric);
 
   return (
@@ -149,7 +149,7 @@ const MetricCard = ({ metric }: MetricCardProps) => {
         </span>
         <div>
           <h3 className="text-lg font-medium text-gray-900">{metric.name}</h3>
-          {metric.is_main_metric && (
+          {!!metric.is_main_metric && (
             <div className="flex items-center text-yellow-500 text-xs mt-1">
               <FiStar size={12} className="mr-1" />
               주요 지표

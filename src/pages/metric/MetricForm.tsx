@@ -16,16 +16,12 @@ const MetricForm = ({ initialData, isEditing = false }: MetricFormProps) => {
 
   const [formData, setFormData] = useState<Partial<Metric>>({
     name: "",
-    label: "",
+
     description: "",
-    is_main_metric: false,
+    is_main_metric: 0,
     type: "simple",
-    type_params: {},
-    filter: "",
-    dimension: null,
-    children: null,
+
     ontology_id: Number(ontology_id),
-    measure_type_id: null,
   });
 
   // 편집 모드인 경우 초기 데이터 불러오기
@@ -45,16 +41,12 @@ const MetricForm = ({ initialData, isEditing = false }: MetricFormProps) => {
     if (isEditing && metricData) {
       setFormData({
         name: metricData.name,
-        label: metricData.label,
+
         description: metricData.description,
         is_main_metric: metricData.is_main_metric,
         type: metricData.type,
-        type_params: metricData.type_params,
-        filter: metricData.filter,
-        dimension: metricData.dimension,
-        children: metricData.children,
+
         ontology_id: metricData.ontology_id,
-        measure_type_id: metricData.measure_type_id,
       });
     }
   }, [isEditing, metricData]);
@@ -63,7 +55,7 @@ const MetricForm = ({ initialData, isEditing = false }: MetricFormProps) => {
   const handleChange = (
     e: React.ChangeEvent<
       HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
-    >
+    >,
   ) => {
     const { name, value, type } = e.target;
 
@@ -84,7 +76,7 @@ const MetricForm = ({ initialData, isEditing = false }: MetricFormProps) => {
         await metricApi.update(Number(id), formData);
       } else {
         await metricApi.create(
-          formData as Omit<Metric, "id" | "created_at" | "updated_at">
+          formData as Omit<Metric, "id" | "created_at" | "updated_at">,
         );
       }
       navigate(`/ontologies/${ontology_id}/metrics`);
@@ -173,7 +165,7 @@ const MetricForm = ({ initialData, isEditing = false }: MetricFormProps) => {
             <input
               type="checkbox"
               name="is_main_metric"
-              checked={formData.is_main_metric || false}
+              checked={!!formData.is_main_metric}
               onChange={handleChange}
               className="form-checkbox h-4 w-4 text-blue-600"
             />
@@ -204,26 +196,6 @@ const MetricForm = ({ initialData, isEditing = false }: MetricFormProps) => {
             <option value="ratio">비율</option>
             <option value="conversion">전환</option>
           </select>
-        </div>
-
-        <div className="mb-4">
-          <label
-            htmlFor="filter"
-            className="block text-sm font-medium text-gray-700 mb-1"
-          >
-            필터
-          </label>
-          <input
-            type="text"
-            id="filter"
-            name="filter"
-            value={formData.filter || ""}
-            onChange={handleChange}
-            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500"
-          />
-          <p className="mt-1 text-xs text-gray-500">
-            지표를 계산할 때 적용할 필터 조건을 입력하세요.
-          </p>
         </div>
 
         {(formData.type === "derived" ||

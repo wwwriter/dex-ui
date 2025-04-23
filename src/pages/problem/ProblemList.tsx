@@ -1,80 +1,97 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Link, useNavigate, useParams } from "react-router-dom";
-import { problemApi } from "../../api/dexApi";
+import { problemApi, problemBookmarkApi } from "../../api/dexApi";
 import { Problem } from "../../types";
 import { FiPlus } from "react-icons/fi";
-import DropdownMenu from "../../components/DropdownMenu";
+import ItemCard from "../../components/ItemCard";
 import { useState } from "react";
+import { createListQueryKey } from "../../api/query-keys";
+import { useUser } from "../../hooks/useUser";
 
 const ProblemList = () => {
   const { ontology_id } = useParams<{ ontology_id: string }>();
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const [editingProblem, setEditingProblem] = useState<Problem | null>(null);
-  const [formData, setFormData] = useState({
-    name: "",
-    description: "",
-  });
+
   const queryClient = useQueryClient();
   const navigate = useNavigate();
+  const { profile } = useUser();
+  const queryKey = createListQueryKey("problems", {
+    filters: { ontology_id },
+  });
 
   const { data: problems = [], isLoading } = useQuery({
-    queryKey: ["problems", ontology_id],
+    queryKey,
     queryFn: () => problemApi.getAll(Number(ontology_id)),
   });
 
-  const createMutation = useMutation({
-    mutationFn: (data: Problem) => problemApi.create(data as Problem),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["problems", ontology_id] });
-      setIsModalOpen(false);
-      setFormData({ name: "", description: "" });
-    },
+  const knowledgeQueryKey = createListQueryKey("problemBookmarks", {
+    filters: { user_id: profile?.id },
   });
 
-  const updateMutation = useMutation({
-    mutationFn: (data: Problem) =>
-      problemApi.update(data.id, {
-        name: data.name,
-        description: data.description,
-      }),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["problems", ontology_id] });
-      setIsModalOpen(false);
-      setEditingProblem(null);
-      setFormData({ name: "", description: "" });
-    },
+  const { data: bookmarks = [] } = useQuery({
+    queryKey: knowledgeQueryKey,
+    queryFn: () =>
+      problemBookmarkApi.getAll({ filters: { user_id: profile?.id } }),
+  });
+
+  const problemsWithBookmarks = problems.map((problem) => ({
+    ...problem,
+    isBookmarked: bookmarks.some(
+      (bookmark) => bookmark.problem_id === problem.id,
+    ),
+    problem_bookmarks: bookmarks.filter(
+      (bookmark) => bookmark.problem_id === problem.id,
+    ),
+  }));
+
+  const sortedProblems = [...problemsWithBookmarks].sort((a, b) => {
+    // 북마크된 항목이 위로 오도록 정렬
+    if (a.isBookmarked && !b.isBookmarked) return -1;
+    if (!a.isBookmarked && b.isBookmarked) return 1;
+    // 북마크 상태가 같다면 생성일 기준 내림차순 정렬
+    return new Date(b.updated_at).getTime() - new Date(a.updated_at).getTime();
   });
 
   const deleteMutation = useMutation({
     mutationFn: (id: number) => problemApi.delete(id),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["problems", ontology_id] });
+      queryClient.invalidateQueries({ queryKey });
     },
   });
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (editingProblem) {
-      updateMutation.mutate({
-        id: editingProblem.id,
-        ontology_id: Number(ontology_id),
-        ...formData,
-      } as Problem);
-    } else {
-      createMutation.mutate({
-        ...formData,
-        ontology_id: Number(ontology_id),
-      } as Problem);
-    }
-  };
+  const createBookmarkMutation = useMutation({
+    mutationFn: (problem_id: number) =>
+      problemBookmarkApi.create({
+        problem_id,
+        user_id: Number(profile?.id),
+      }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: knowledgeQueryKey });
+    },
+  });
 
-  const handleEdit = (problem: Problem) => {
-    setEditingProblem(problem);
-    setFormData({
-      name: problem.name,
-      description: problem.description || "",
-    });
-    setIsModalOpen(true);
+  const deleteBookmarkMutation = useMutation({
+    mutationFn: (id: number) => problemBookmarkApi.delete(id),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: knowledgeQueryKey });
+    },
+  });
+
+  const handleBookmark = (e: React.MouseEvent, problem: Problem) => {
+    e.preventDefault(); // 링크 이동을 방지
+    e.stopPropagation(); // 이벤트 버블링 방지
+
+    if (
+      problem.isBookmarked &&
+      problem.problem_bookmarks &&
+      problem.problem_bookmarks.length > 0
+    ) {
+      // 북마크 삭제
+      const bookmarkId = problem.problem_bookmarks[0].id;
+      deleteBookmarkMutation.mutate(bookmarkId);
+    } else {
+      // 북마크 추가
+      createBookmarkMutation.mutate(problem.id);
+    }
   };
 
   const handleDelete = (id: number) => {
@@ -98,99 +115,24 @@ const ProblemList = () => {
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-        {problems.map((problem) => (
-          <div
+        {sortedProblems.map((problem) => (
+          <ItemCard
             key={problem.id}
-            className="bg-white p-6 rounded-lg shadow hover:shadow-md transition-shadow relative"
-          >
-            <div className="absolute top-4 right-4">
-              <DropdownMenu
-                // onEdit={() => handleEdit(problem)}
-                onDelete={() => handleDelete(problem.id)}
-              />
-            </div>
-            <Link to={`/ontologies/${ontology_id}/problems/${problem.id}`}>
-              <h2 className="text-xl font-semibold text-gray-900 max-w-[290px]">
-                {problem.name}
-              </h2>
-              <p className="mt-2 text-gray-600">{problem.description}</p>
-            </Link>
-          </div>
+            id={problem.id}
+            name={problem.name}
+            description={problem.description || ""}
+            isBookmarked={problem.isBookmarked}
+            ontologyId={ontology_id || ""}
+            itemType="problems"
+            onBookmark={(e) => handleBookmark(e, problem)}
+            onDelete={() => handleDelete(problem.id)}
+            onItemClick={(e) =>
+              navigate(`/ontologies/${ontology_id}/problems/${problem.id}`)
+            }
+            created_at={problem.created_at}
+          />
         ))}
       </div>
-
-      {/* 모달 */}
-      {isModalOpen && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center">
-          <div className="bg-white rounded-lg p-6 w-full max-w-md">
-            <h2 className="text-xl font-semibold mb-4">
-              {editingProblem ? "문제 수정" : "새 문제 추가"}
-            </h2>
-            <form onSubmit={handleSubmit}>
-              <div className="mb-4">
-                <label
-                  htmlFor="name"
-                  className="block text-sm font-medium text-gray-700 mb-1"
-                >
-                  이름
-                </label>
-                <input
-                  type="text"
-                  id="name"
-                  value={formData.name}
-                  onChange={(e) =>
-                    setFormData({ ...formData, name: e.target.value })
-                  }
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  required
-                />
-              </div>
-              <div className="mb-6">
-                <label
-                  htmlFor="description"
-                  className="block text-sm font-medium text-gray-700 mb-1"
-                >
-                  설명
-                </label>
-                <textarea
-                  id="description"
-                  value={formData.description}
-                  onChange={(e) =>
-                    setFormData({ ...formData, description: e.target.value })
-                  }
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  rows={3}
-                  required
-                />
-              </div>
-              <div className="flex justify-end gap-2">
-                <button
-                  type="button"
-                  onClick={() => {
-                    setIsModalOpen(false);
-                    setEditingProblem(null);
-                    setFormData({ name: "", description: "" });
-                  }}
-                  className="px-4 py-2 text-gray-700 border border-gray-300 rounded-md hover:bg-gray-50"
-                >
-                  취소
-                </button>
-                <button
-                  type="submit"
-                  className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
-                  disabled={
-                    createMutation.isPending || updateMutation.isPending
-                  }
-                >
-                  {createMutation.isPending || updateMutation.isPending
-                    ? "저장 중..."
-                    : "저장"}
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
     </div>
   );
 };

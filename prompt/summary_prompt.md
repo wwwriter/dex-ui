@@ -76,6 +76,7 @@
   - Markdown 형식을 준수하고, **중요 용어**는 **굵게 처리**하여 시각적 강조를 합니다.
 
 ## 작성계획
+
 - object : deep_analysis
 - length : 1500자 이상
 

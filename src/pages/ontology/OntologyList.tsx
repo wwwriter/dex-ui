@@ -15,7 +15,7 @@ const OntologyList = () => {
     description: "",
   });
   const queryClient = useQueryClient();
-  const queryKey = createListQueryKey("ontologies",{});
+  const queryKey = createListQueryKey("ontologies", {});
 
   const { data: ontologies = [] as Ontology[], isLoading } = useQuery<
     Ontology[]
@@ -107,7 +107,7 @@ const OntologyList = () => {
                 onDelete={() => handleDelete(ontology.id)}
               />
             </div>
-            <Link to={`/ontologies/${ontology.id}/knowlege`}>
+            <Link to={`/ontologies/${ontology.id}/knowledge`}>
               <h2 className="text-xl font-semibold text-gray-900">
                 {ontology.name}
               </h2>

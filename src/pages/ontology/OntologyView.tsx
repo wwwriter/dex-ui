@@ -53,7 +53,7 @@ const OntologyView = () => {
   const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
   const [selectedNodeId, setSelectedNodeId] = useState<string | null>(null);
   const [selectedNode, setSelectedNode] = useState<ObjectType | Metric | null>(
-    null
+    null,
   );
   const [modalType, setModalType] = useState<"object" | "metric">("object");
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -139,7 +139,7 @@ const OntologyView = () => {
               ? `style OBJ${objId} fill:#f9e0e8,stroke:#ff3399,stroke-width:4px,color:#990066,font-weight:bold`
               : "";
             code += `    OBJ${objId}["${formatLabel(
-              obj.label || obj.name
+              obj.label || obj.name,
             )}"]\n`;
             if (isSelected) {
               code += `    ${style}\n`;
@@ -173,7 +173,7 @@ const OntologyView = () => {
           ? `style M${metric.id} fill:#e0f0ff,stroke:#3399ff,stroke-width:4px,color:#0066cc,font-weight:bold`
           : "";
         code += `    M${metric.id}["${formatLabel(
-          metric.label || metric.name || `Metric-${metric.id}`
+          metric.name || `Metric-${metric.id}`,
         )}"]\n`;
         if (isSelected) {
           code += `    ${style}\n`;
@@ -206,9 +206,7 @@ const OntologyView = () => {
 
           // 관련된 메트릭 찾기
           const metric = metrics.find((m) => m.id === relation.metric_id);
-          const label = metric
-            ? formatLabel(metric.label || metric.name || "측정")
-            : "측정";
+          const label = metric ? formatLabel(metric.name || "측정") : "측정";
 
           code += `  ${objId} -.->|${label}| ${metricId}\n`;
         } catch (e) {
@@ -217,24 +215,6 @@ const OntologyView = () => {
       });
 
       // 기존 measure_type_id 기반 연결도 유지 (중복되지 않는 경우에만)
-      metrics.forEach((metric) => {
-        if (metric.measure_type_id) {
-          // 이미 metricObjectTypeRelations에 해당 관계가 있는지 확인
-          const relationExists = metricObjectTypeRelations.some(
-            (rel) =>
-              rel.metric_id === metric.id &&
-              rel.object_type_id === metric.measure_type_id
-          );
-
-          // 중복되지 않는 경우에만 추가
-          if (!relationExists) {
-            const objId = `OBJ${metric.measure_type_id}`;
-            code += `  ${objId} -.->|${formatLabel(
-              metric.label || metric.name || "측정"
-            )}| M${metric.id}\n`;
-          }
-        }
-      });
     }
 
     return code;
@@ -376,7 +356,7 @@ const OntologyView = () => {
     if (e.ctrlKey || e.metaKey) {
       const delta = e.deltaY > 0 ? -0.1 : 0.1;
       setZoomLevel((prevLevel) =>
-        Math.min(Math.max(prevLevel + delta, 0.5), 3)
+        Math.min(Math.max(prevLevel + delta, 0.5), 3),
       );
     }
   };
@@ -398,7 +378,7 @@ const OntologyView = () => {
       (e) => {
         if (e.ctrlKey || e.metaKey) e.preventDefault();
       },
-      { passive: false }
+      { passive: false },
     );
 
     return () => {

@@ -1,3 +1,21 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+/* MarkdownEditor 미리보기 모드 설정 */
+.md-editor {
+  --md-editor-preview: none;
+}
+
+@media (min-width: 768px) {
+  .md-editor.md\:preview-live {
+    --md-editor-preview: block;
+  }
+}
+
+/* 모바일에서는 preview를 "edit"으로 설정 */
+@media (max-width: 767px) {
+  .md-editor {
+    --md-editor-preview: none;
+  }
+}

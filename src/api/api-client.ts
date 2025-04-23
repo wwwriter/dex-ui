@@ -15,7 +15,7 @@ const saveToCache = async (key: string, data: any) => {
       JSON.stringify({
         timestamp: Date.now(),
         data,
-      })
+      }),
     );
   } catch (error) {
     console.error("캐시 저장 실패:", error);
@@ -38,7 +38,7 @@ const getFromCache = (key: string) => {
 // API 요청 함수
 export const apiRequest = async (
   endpoint: string,
-  options: RequestInit = {}
+  options: RequestInit = {},
 ) => {
   const url = `${BASE_URL}${endpoint}`;
   const cacheKey = `${options.method || "GET"}-${endpoint}`;
@@ -98,7 +98,7 @@ export const get = (endpoint: string, options: RequestInit = {}) => {
 export const post = (
   endpoint: string,
   data: any,
-  options: RequestInit = {}
+  options: RequestInit = {},
 ) => {
   return apiRequest(endpoint, {
     ...options,
