@@ -42,7 +42,7 @@ const MetricRelationshipModal = ({
   const availableMetrics = metrics.filter(
     (m) =>
       m.id !== metric.id &&
-      !existingRelationships.some((rel) => rel.target_metric_id === m.id)
+      !existingRelationships.some((rel) => rel.target_metric_id === m.id),
   );
 
   useEffect(() => {

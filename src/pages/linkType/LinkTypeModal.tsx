@@ -48,7 +48,7 @@ const LinkTypeModal = ({
   const targetObjectTypes = objectTypes.filter(
     (obj) =>
       obj.id !== object_type_id &&
-      !existingLinkTypes.some((link) => link.target_object_type_id === obj.id)
+      !existingLinkTypes.some((link) => link.target_object_type_id === obj.id),
   );
 
   // 소스 객체 타입 정보
@@ -161,7 +161,7 @@ const LinkTypeModal = ({
               value={formData.target_object_type_id || ""}
               onChange={(e) =>
                 handleTargetObjectTypeChange(
-                  e.target.value ? Number(e.target.value) : null
+                  e.target.value ? Number(e.target.value) : null,
                 )
               }
               required

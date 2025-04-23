@@ -13,7 +13,7 @@ interface PropertyTableProps {
 
 const PropertyTable = ({ ontology_id, object_type_id }: PropertyTableProps) => {
   const [selectedProperty, setSelectedProperty] = useState<Property | null>(
-    null
+    null,
   );
   const [isModalOpen, setIsModalOpen] = useState(false);
 

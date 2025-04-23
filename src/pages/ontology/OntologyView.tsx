@@ -61,7 +61,7 @@ const OntologyView = () => {
   const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
   const [selectedNodeId, setSelectedNodeId] = useState<string | null>(null);
   const [selectedNode, setSelectedNode] = useState<ObjectType | Metric | null>(
-    null
+    null,
   );
   const [modalType, setModalType] = useState<"object" | "metric">("object");
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -133,7 +133,7 @@ const OntologyView = () => {
         }
       }
     },
-    [objectTypes, metrics]
+    [objectTypes, metrics],
   );
 
   // 온톨로지 코드 생성
@@ -156,7 +156,7 @@ const OntologyView = () => {
               ? `style OBJ${objId} fill:#f9e0e8,stroke:#ff3399,stroke-width:4px,color:#990066,font-weight:bold`
               : "";
             code += `    OBJ${objId}["${formatLabel(
-              obj.label || obj.name
+              obj.label || obj.name,
             )}"]\n`;
             if (isSelected) {
               code += `    ${style}\n`;
@@ -190,7 +190,7 @@ const OntologyView = () => {
           ? `style M${metric.id} fill:#e0f0ff,stroke:#3399ff,stroke-width:4px,color:#0066cc,font-weight:bold`
           : "";
         code += `    M${metric.id}["${formatLabel(
-          metric.name || `Metric-${metric.id}`
+          metric.name || `Metric-${metric.id}`,
         )}"]\n`;
         if (isSelected) {
           code += `    ${style}\n`;
@@ -239,15 +239,15 @@ const OntologyView = () => {
 
           // 소스 메트릭과 타겟 메트릭 찾기
           const sourceMetric = metrics.find(
-            (m) => m.id === relation.source_metric_id
+            (m) => m.id === relation.source_metric_id,
           );
           const targetMetric = metrics.find(
-            (m) => m.id === relation.target_metric_id
+            (m) => m.id === relation.target_metric_id,
           );
 
           if (sourceMetric && targetMetric) {
             const label = formatLabel(
-              `${sourceMetric.name} → ${targetMetric.name}`
+              `${sourceMetric.name} → ${targetMetric.name}`,
             );
             // 메트릭 관계를 점선으로 표현
             code += `  ${sourceMetricId} -.-> ${targetMetricId}\n`;
@@ -384,7 +384,7 @@ const OntologyView = () => {
 
       setDragStart({ x: e.clientX, y: e.clientY });
     },
-    [isDragging, dragStart]
+    [isDragging, dragStart],
   );
 
   // 드래그 종료 핸들러
@@ -398,7 +398,7 @@ const OntologyView = () => {
     if (e.ctrlKey || e.metaKey) {
       const delta = e.deltaY > 0 ? -0.1 : 0.1;
       setZoomLevel((prevLevel) =>
-        Math.min(Math.max(prevLevel + delta, 0.5), 3)
+        Math.min(Math.max(prevLevel + delta, 0.5), 3),
       );
     }
   }, []);
@@ -420,7 +420,7 @@ const OntologyView = () => {
       (e) => {
         if (e.ctrlKey || e.metaKey) e.preventDefault();
       },
-      { passive: false }
+      { passive: false },
     );
 
     return () => {

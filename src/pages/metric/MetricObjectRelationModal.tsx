@@ -42,7 +42,7 @@ const MetricObjectRelationModal = ({
 
   // 이미 연결된 객체 타입을 제외한 목록
   const availableObjectTypes = objectTypes.filter(
-    (obj) => !existingRelations.some((rel) => rel.object_type_id === obj.id)
+    (obj) => !existingRelations.some((rel) => rel.object_type_id === obj.id),
   );
 
   useEffect(() => {

@@ -54,7 +54,7 @@ const ProblemForm = ({ initialData, isEditing = false }: ProblemFormProps) => {
 
   // 입력 변경 핸들러
   const handleChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
   ) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
@@ -76,7 +76,7 @@ const ProblemForm = ({ initialData, isEditing = false }: ProblemFormProps) => {
           formData as Omit<
             Problem,
             "id" | "created_at" | "updated_at" | "deleted_at"
-          >
+          >,
         );
       }
       navigate(`/ontologies/${ontology_id}/problems`);

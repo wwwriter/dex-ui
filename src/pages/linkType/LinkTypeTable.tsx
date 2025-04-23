@@ -12,7 +12,7 @@ interface LinkTypeTableProps {
 
 const LinkTypeTable = ({ ontology_id, object_type_id }: LinkTypeTableProps) => {
   const [selectedLinkType, setSelectedLinkType] = useState<LinkType | null>(
-    null
+    null,
   );
   const [isModalOpen, setIsModalOpen] = useState(false);
 

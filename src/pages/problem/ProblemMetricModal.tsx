@@ -42,8 +42,8 @@ const ProblemMetricModal = ({
   const availableMetrics = metrics.filter(
     (metric) =>
       !existingProblemMetrics.some(
-        (problemMetric) => problemMetric.metric_id === metric.id
-      )
+        (problemMetric) => problemMetric.metric_id === metric.id,
+      ),
   );
 
   useEffect(() => {

@@ -88,7 +88,7 @@ const ProblemMetricTable = ({
           <tbody>
             {problemMetrics?.map((problemMetric) => {
               const metric = metrics.find(
-                (m) => m.id === problemMetric.metric_id
+                (m) => m.id === problemMetric.metric_id,
               );
               return (
                 <tr key={problemMetric.id}>

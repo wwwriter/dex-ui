@@ -57,7 +57,7 @@ const MetricForm = ({ initialData, isEditing = false }: MetricFormProps) => {
   const handleChange = (
     e: React.ChangeEvent<
       HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
-    >
+    >,
   ) => {
     const { name, value, type } = e.target;
 
@@ -78,7 +78,7 @@ const MetricForm = ({ initialData, isEditing = false }: MetricFormProps) => {
         await metricApi.update(Number(id), formData);
       } else {
         await metricApi.create(
-          formData as Omit<Metric, "id" | "created_at" | "updated_at">
+          formData as Omit<Metric, "id" | "created_at" | "updated_at">,
         );
       }
       navigate(`/ontologies/${ontology_id}/metrics`);

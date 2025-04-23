@@ -61,7 +61,7 @@ const MetricObjectRelationTable = ({
     >
       {relations.map((relation) => {
         const objectType = objectTypes.find(
-          (obj) => obj.id === relation.object_type_id
+          (obj) => obj.id === relation.object_type_id,
         );
         return (
           <tr key={relation.id}>

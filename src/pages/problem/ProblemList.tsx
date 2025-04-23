@@ -38,10 +38,10 @@ const ProblemList = () => {
   const problemsWithBookmarks = problems.map((problem) => ({
     ...problem,
     isBookmarked: bookmarks.some(
-      (bookmark) => bookmark.problem_id === problem.id
+      (bookmark) => bookmark.problem_id === problem.id,
     ),
     problem_bookmarks: bookmarks.filter(
-      (bookmark) => bookmark.problem_id === problem.id
+      (bookmark) => bookmark.problem_id === problem.id,
     ),
   }));
 

@@ -63,7 +63,7 @@ const MetricRelationshipTable = ({
     >
       {relationships.map((relationship) => {
         const targetMetric = metrics.find(
-          (m) => m.id === relationship.target_metric_id
+          (m) => m.id === relationship.target_metric_id,
         );
         return (
           <tr key={relationship.id}>

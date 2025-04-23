@@ -32,7 +32,7 @@ interface VLLMMessage {
 // 채팅 메시지를 vllm API 형식으로 변환하는 함수
 const formatMessagesToVLLM = (
   messages: ChatMessage[],
-  contextMessage?: string
+  contextMessage?: string,
 ): VLLMMessage[] => {
   // 시스템 프롬프트
   const systemPrompt = `당신은 친절하고 도움이 되는 AI 어시스턴트입니다. 사용자의 질문에 한국어로 답변해주세요.
@@ -74,7 +74,7 @@ const formatMessagesToVLLM = (
 export const fetchChatResponse = async (
   messages: ChatMessage[],
   onChunk: (chunk: string) => void,
-  contextMessage?: string
+  contextMessage?: string,
 ): Promise<string> => {
   try {
     // 메시지를 vllm API 형식으로 변환

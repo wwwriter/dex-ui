@@ -13,7 +13,7 @@ const Header: React.FC = () => {
   const param = useParams();
   const ontologyMatch = matchPath(
     { path: "/ontologies/:ontology_id/*" },
-    location.pathname
+    location.pathname,
   );
 
   const ontology_id = ontologyMatch?.params?.ontology_id;
@@ -30,7 +30,7 @@ const Header: React.FC = () => {
         acc[ontology.id] = ontology;
         return acc;
       },
-      {} as Record<number, Ontology>
+      {} as Record<number, Ontology>,
     );
   }, [ontologies]);
 

@@ -66,7 +66,7 @@ const KnowledgeForm = ({
 
   // 입력 변경 핸들러
   const handleChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
   ) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
@@ -88,7 +88,7 @@ const KnowledgeForm = ({
           formData as Omit<
             Knowledge,
             "id" | "created_at" | "updated_at" | "deleted_at"
-          >
+          >,
         );
       }
       if (id) {
@@ -120,7 +120,7 @@ const KnowledgeForm = ({
             title: formData.name,
             content: formData.description,
           }),
-        }
+        },
       );
 
       if (!response.ok) {

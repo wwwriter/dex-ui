@@ -83,7 +83,7 @@ const ChatModal: React.FC<ChatModalProps> = ({ onClose }) => {
               </ReactMarkdown>
             </div>
           )}
-        </div>
+        </div>,
       );
 
       // </think> 이후의 내용 추가
@@ -93,7 +93,7 @@ const ChatModal: React.FC<ChatModalProps> = ({ onClose }) => {
         segments.push(
           <ReactMarkdown key="remaining" components={MarkdownComponents}>
             {remainingText}
-          </ReactMarkdown>
+          </ReactMarkdown>,
         );
       }
     }
@@ -304,7 +304,7 @@ const ChatModal: React.FC<ChatModalProps> = ({ onClose }) => {
             ? NodeFilter.FILTER_ACCEPT
             : NodeFilter.FILTER_REJECT;
         },
-      }
+      },
     );
 
     let node;
@@ -385,7 +385,7 @@ const ChatModal: React.FC<ChatModalProps> = ({ onClose }) => {
             return updatedMessages;
           });
         },
-        contextMessage
+        contextMessage,
       );
     } catch (error) {
       console.error("채팅 API 오류:", error);
@@ -434,7 +434,7 @@ const ChatModal: React.FC<ChatModalProps> = ({ onClose }) => {
     try {
       localStorage.setItem(
         window.location.pathname,
-        JSON.stringify(newMessages)
+        JSON.stringify(newMessages),
       );
     } catch (error) {
       console.error("새 대화 내용을 저장하는데 실패했습니다:", error);
@@ -495,7 +495,7 @@ const ChatModal: React.FC<ChatModalProps> = ({ onClose }) => {
                 <button
                   onClick={() =>
                     handleTemplateClick(
-                      "이 내용에서 만들 수 있는 컨텐츠 제목 3가지 뽑아줘"
+                      "이 내용에서 만들 수 있는 컨텐츠 제목 3가지 뽑아줘",
                     )
                   }
                   className="p-3 text-left bg-sky-50 hover:bg-sky-100 rounded-lg transition-colors"

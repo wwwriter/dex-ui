@@ -30,7 +30,7 @@ const NodeInfoModal: React.FC<NodeInfoModalProps> = ({
         (selectedNode as ObjectType).ontology_id || undefined,
         {
           filters: { object_type_id: (selectedNode as ObjectType).id },
-        }
+        },
       ),
     enabled: !isMetric && !!(selectedNode as ObjectType).id,
   });
