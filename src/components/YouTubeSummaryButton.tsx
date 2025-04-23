@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useParams } from "react-router-dom";
 
@@ -10,9 +10,29 @@ const YouTubeSummaryButton = () => {
   const { ontology_id } = useParams<{ ontology_id: string }>();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [url, setUrl] = useState("");
-
   const [error, setError] = useState<string | null>(null);
   const queryClient = useQueryClient();
+
+  useEffect(() => {
+    const checkClipboard = async () => {
+      if (isModalOpen) {
+        try {
+          const clipboardText = await navigator.clipboard.readText();
+          if (
+            clipboardText.includes("youtube.com") ||
+            clipboardText.includes("youtu.be")
+          ) {
+            setUrl(clipboardText);
+          }
+        } catch (err) {
+          console.error("클립보드 접근 실패:", err);
+        }
+      }
+    };
+
+    checkClipboard();
+  }, [isModalOpen]);
+
   const { mutate: summarizeYouTube } = useMutation({
     mutationFn: async (url: string) => {
       const response = await fetch(`${SUMMARY_URL}/api/knowledge`, {
