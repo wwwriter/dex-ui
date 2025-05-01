@@ -61,11 +61,13 @@ const ItemCard = ({
         </div>
 
         {description && (
-          <p className="text-gray-600 mb-4 line-clamp-3">{description}</p>
+          <p className="text-gray-600 mb-4 line-clamp-3 text-sm">
+            {description.replaceAll("#", "").replaceAll("*", "")}
+          </p>
         )}
 
         {author && (
-          <p className="text-gray-500 text-sm mb-2">작성자: {author}</p>
+          <p className="text-gray-500 text-xs mb-2">작성자: {author}</p>
         )}
 
         {created_at && (

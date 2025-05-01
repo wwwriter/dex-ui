@@ -8,10 +8,10 @@ export default defineConfig({
     proxy: {
       // API 요청을 위한 프록시 설정 예시
       "/api": {
-        target: "https://llana.soneuro-handmade.com",
+        target: "https://dex.soneuro-handmade.com",
         changeOrigin: true,
 
-        rewrite: (path) => path.replace(/^\/api/, ""),
+        // rewrite: (path) => path.replace(/^\/api/, ""),
         secure: true,
         cookieDomainRewrite: "localhost",
       },

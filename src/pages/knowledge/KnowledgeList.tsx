@@ -316,7 +316,7 @@ const KnowledgeList = () => {
           key={knowledge.id}
           id={knowledge.id}
           name={knowledge.name}
-          description={knowledge.description || ""}
+          description={knowledge.summary || ""}
           isBookmarked={knowledge.isBookmarked}
           ontologyId={ontology_id || ""}
           itemType="knowledge"
