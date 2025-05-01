@@ -29,8 +29,8 @@ const KnowledgeForm = ({
 
   const [formData, setFormData] = useState<Partial<Knowledge>>({
     name: "",
-    label: "",
     description: "",
+    author: "",
     summary: "",
     mermaid: "",
     link: "",
@@ -54,8 +54,8 @@ const KnowledgeForm = ({
     if (isEditing && knowledgeData) {
       setFormData({
         name: knowledgeData.name,
-        label: knowledgeData.label,
         description: knowledgeData.description,
+        author: knowledgeData.author,
         mermaid: knowledgeData.mermaid,
         summary: knowledgeData.summary,
         link: knowledgeData.link,
@@ -183,7 +183,18 @@ const KnowledgeForm = ({
             required
           />
         </div>
-        <div className="w-full ">
+        <div className="w-full lg:w-1/2">
+          <FormInput
+            label="작성자"
+            name="author"
+            value={formData.author || ""}
+            onChange={handleChange}
+          />
+        </div>
+      </div>
+
+      <div className="flex flex-col lg:flex-row gap-4 mb-4">
+        <div className="w-full">
           <FormInput
             label="링크"
             name="link"

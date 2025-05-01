@@ -46,8 +46,8 @@ export interface Ontology {
 export interface Knowledge {
   id: number;
   name: string;
-  label: string | null;
   description: string | null;
+  author: string | null;
   summary: string | null;
   mermaid: string | null;
   link: string | null;

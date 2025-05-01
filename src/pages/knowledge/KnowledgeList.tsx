@@ -33,11 +33,11 @@ const KnowledgeList = () => {
   const [targetOntologyId, setTargetOntologyId] = useState<string>("");
   const [isCommandKeyPressed, setIsCommandKeyPressed] = useState(false);
   const [commandKeyTimer, setCommandKeyTimer] = useState<NodeJS.Timeout | null>(
-    null,
+    null
   );
   const [isLongPressing, setIsLongPressing] = useState(false);
   const [longPressTimer, setLongPressTimer] = useState<NodeJS.Timeout | null>(
-    null,
+    null
   );
 
   const queryClient = useQueryClient();
@@ -80,10 +80,10 @@ const KnowledgeList = () => {
   const knowledgeWithBookmarks = knowledgeList.map((knowledge) => ({
     ...knowledge,
     isBookmarked: bookmarks.some(
-      (bookmark) => bookmark.knowledge_id === knowledge.id,
+      (bookmark) => bookmark.knowledge_id === knowledge.id
     ),
     knowledge_bookmarks: bookmarks.filter(
-      (bookmark) => bookmark.knowledge_id === knowledge.id,
+      (bookmark) => bookmark.knowledge_id === knowledge.id
     ),
   }));
 
@@ -115,7 +115,7 @@ const KnowledgeList = () => {
       targetOntologyId: number;
     }) => {
       const promises = data.knowledgeIds.map((id) =>
-        knowledgeApi.patch(id, { ontology_id: data.targetOntologyId }),
+        knowledgeApi.patch(id, { ontology_id: data.targetOntologyId })
       );
       return Promise.all(promises);
     },
@@ -211,7 +211,7 @@ const KnowledgeList = () => {
       toggleItemSelection,
       ontology_id,
       navigate,
-    ],
+    ]
   );
 
   // 롱프레스 핸들러
@@ -228,7 +228,7 @@ const KnowledgeList = () => {
 
       document.addEventListener("mouseup", handleMouseUp);
     },
-    [toggleItemSelection],
+    [toggleItemSelection]
   );
 
   // 선택 모드 종료
@@ -326,6 +326,7 @@ const KnowledgeList = () => {
           onDelete={() => handleDelete(knowledge.id)}
           created_at={knowledge.created_at}
           isSelected={selectedItems.includes(knowledge.id)}
+          author={knowledge.author}
         />
       ))}
 

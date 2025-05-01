@@ -78,6 +78,13 @@ const KnowledgeDetail = () => {
           </div>
         )}
 
+        {knowledge.author && (
+          <div className="mb-1 p-4">
+            <h3 className="text-lg font-medium text-gray-900 mb-2">작성자</h3>
+            <p className="text-gray-700">{knowledge.author}</p>
+          </div>
+        )}
+
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
           <div>
             <h3 className="text-lg font-medium text-gray-900 mb-2 p-4">요약</h3>

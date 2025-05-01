@@ -1,9 +1,9 @@
 import axios from "axios";
-import { useNavigate } from "react-router-dom";
 import { BASE_URL } from "./config";
 
 const instance = axios.create({
-  baseURL: BASE_URL,
+  baseURL: "/api",
+  // baseURL: BASE_URL,
 });
 
 // 요청 인터셉터
@@ -17,7 +17,7 @@ instance.interceptors.request.use(
   },
   (error) => {
     return Promise.reject(error);
-  },
+  }
 );
 
 // 응답 인터셉터
@@ -39,7 +39,7 @@ instance.interceptors.response.use(
       }
     }
     return Promise.reject(error);
-  },
+  }
 );
 
 export default instance;

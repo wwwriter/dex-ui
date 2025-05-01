@@ -4,6 +4,19 @@ import { VitePWA } from "vite-plugin-pwa";
 
 // https://vite.dev/config/
 export default defineConfig({
+  server: {
+    proxy: {
+      // API 요청을 위한 프록시 설정 예시
+      "/api": {
+        target: "https://llana.soneuro-handmade.com",
+        changeOrigin: true,
+
+        rewrite: (path) => path.replace(/^\/api/, ""),
+        secure: true,
+        cookieDomainRewrite: "localhost",
+      },
+    },
+  },
   plugins: [
     react(),
     VitePWA({

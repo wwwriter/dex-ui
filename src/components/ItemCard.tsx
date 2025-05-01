@@ -17,6 +17,7 @@ interface ItemCardProps {
   onMouseUp?: () => void;
   onMouseLeave?: () => void;
   isSelected?: boolean;
+  author?: string | null;
 }
 
 const ItemCard = ({
@@ -34,6 +35,7 @@ const ItemCard = ({
   onMouseUp,
   onMouseLeave,
   isSelected = false,
+  author,
 }: ItemCardProps) => {
   return (
     <div className="relative">
@@ -60,6 +62,10 @@ const ItemCard = ({
 
         {description && (
           <p className="text-gray-600 mb-4 line-clamp-3">{description}</p>
+        )}
+
+        {author && (
+          <p className="text-gray-500 text-sm mb-2">작성자: {author}</p>
         )}
 
         {created_at && (

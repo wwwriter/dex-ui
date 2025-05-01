@@ -11,7 +11,7 @@ import {
   MetricRelationship,
 } from "../types";
 import axiosInstance from "./axios";
-import { BASE_URL } from "./config";
+
 
 export interface DetailApiRequest {
   fields?: string;
