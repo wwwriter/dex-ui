@@ -1,12 +1,76 @@
-import React, { useState, useRef, useEffect } from "react";
+import React, {
+  useState,
+  useRef,
+  useEffect,
+  useCallback,
+  Fragment,
+} from "react";
 import { FaRobot, FaUser, FaPlus } from "react-icons/fa";
 import { ChatMessage, fetchChatResponse } from "../api/llmService";
-import ReactMarkdown from "react-markdown";
+import MarkdownPreview from "@uiw/react-markdown-preview";
+import mermaid from "mermaid";
+import { getCodeString } from "rehype-rewrite";
 // import "github-markdown-css/github-markdown.css";
 
 interface ChatModalProps {
   onClose: () => void;
 }
+
+// Mermaid 다이어그램만 별도의 컴포넌트로 분리
+const Mermaid = ({ chart, id }: { chart: string; id: string }) => {
+  const ref = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    if (ref.current) {
+      ref.current.innerHTML = "";
+      mermaid.render(id, chart).then(({ svg }) => {
+        if (ref.current) ref.current.innerHTML = svg;
+      });
+    }
+    return () => {
+      if (ref.current) ref.current.innerHTML = "";
+    };
+  }, [chart, id]);
+  return <div ref={ref} />;
+};
+
+interface CodeProps {
+  inline?: boolean;
+  children?: React.ReactNode;
+  className?: string;
+  isLoading?: boolean;
+  [key: string]: any;
+}
+const randomid = () => parseInt(String(Math.random() * 1e15), 10).toString(36);
+const Code: React.FC<CodeProps> = ({
+  inline,
+  children,
+  className,
+  isLoading,
+  ...props
+}) => {
+  const code =
+    props.node && props.node.children
+      ? getCodeString(props.node.children)
+      : typeof children === "string"
+        ? children
+        : Array.isArray(children)
+          ? children[0] || ""
+          : "";
+  const isMermaid =
+    className && /^language-mermaid/.test(className.toLocaleLowerCase());
+  const id = useRef("mermaid-" + Math.random().toString(36).slice(2)).current;
+  if (isMermaid) {
+    if (isLoading) {
+      return (
+        <pre className={className}>
+          <code>{code}</code>
+        </pre>
+      );
+    }
+    return <Mermaid chart={code} id={id} />;
+  }
+  return <code className={className}>{children}</code>;
+};
 
 const ChatModal: React.FC<ChatModalProps> = ({ onClose }) => {
   const [messages, setMessages] = useState<ChatMessage[]>(() => {
@@ -51,19 +115,80 @@ const ChatModal: React.FC<ChatModalProps> = ({ onClose }) => {
 
   // <think> 태그를 처리하는 함수
   const processThinkTags = (text: string): React.ReactNode[] => {
-    if (!text.includes("</think>")) return [text];
+    if (!text.includes("<think>")) return [text];
 
     const segments = [];
+    let currentIndex = 0;
 
-    // </think> 태그 위치 찾기
-    const endTagIndex = text.indexOf("</think>");
-
-    if (endTagIndex !== -1) {
-      // </think> 이전의 모든 내용을 생각 내용으로 간주
-      const thoughtContent = text.substring(0, endTagIndex);
-      const thoughtId = "thought-0";
-
-      // 생각 내용을 아코디언으로 추가
+    while (currentIndex < text.length) {
+      const startTagIndex = text.indexOf("<think>", currentIndex);
+      if (startTagIndex === -1) {
+        if (currentIndex < text.length) {
+          segments.push(
+            <MarkdownPreview
+              key={`text-${currentIndex}`}
+              source={text.substring(currentIndex).replace(/<\/?think>/g, "")}
+              className="!text-gray-900 !bg-transparent !font-sans"
+              style={{ backgroundColor: "transparent" }}
+              components={{
+                ...MarkdownComponents,
+                code: (props) => <Code {...props} isLoading={isLoading} />,
+              }}
+            />
+          );
+        }
+        break;
+      }
+      if (startTagIndex > currentIndex) {
+        segments.push(
+          <MarkdownPreview
+            key={`text-${currentIndex}`}
+            source={text
+              .substring(currentIndex, startTagIndex)
+              .replace(/<\/?think>/g, "")}
+            className="!text-gray-900 !bg-transparent !font-sans"
+            style={{ backgroundColor: "transparent" }}
+            components={{
+              ...MarkdownComponents,
+              code: (props) => <Code {...props} isLoading={isLoading} />,
+            }}
+          />
+        );
+      }
+      const endTagIndex = text.indexOf("</think>", startTagIndex);
+      if (endTagIndex === -1) {
+        const thoughtContent = text.substring(startTagIndex + 7);
+        const thoughtId = `thought-${startTagIndex}`;
+        segments.push(
+          <div
+            key={thoughtId}
+            className="my-2 border border-gray-200 rounded-md overflow-hidden"
+          >
+            <button
+              onClick={() => toggleThought(thoughtId)}
+              className="w-full p-2 bg-gray-100 text-left flex justify-between items-center"
+            >
+              <span className="font-medium text-gray-700">생각중...</span>
+              <span>{expandedThoughts[thoughtId] ? "▲" : "▼"}</span>
+            </button>
+            {expandedThoughts[thoughtId] && (
+              <div className="p-3 bg-gray-50">
+                <MarkdownPreview
+                  source={thoughtContent.replace(/<\/?think>/g, "")}
+                  className="!text-gray-900 !bg-transparent !font-sans"
+                  style={{ backgroundColor: "transparent" }}
+                  components={{
+                    code: (props) => <Code {...props} isLoading={isLoading} />,
+                  }}
+                />
+              </div>
+            )}
+          </div>
+        );
+        break;
+      }
+      const thoughtContent = text.substring(startTagIndex + 7, endTagIndex);
+      const thoughtId = `thought-${startTagIndex}`;
       segments.push(
         <div
           key={thoughtId}
@@ -78,26 +203,20 @@ const ChatModal: React.FC<ChatModalProps> = ({ onClose }) => {
           </button>
           {expandedThoughts[thoughtId] && (
             <div className="p-3 bg-gray-50">
-              <ReactMarkdown components={MarkdownComponents}>
-                {thoughtContent}
-              </ReactMarkdown>
+              <MarkdownPreview
+                source={thoughtContent.replace(/<\/?think>/g, "")}
+                className="!text-gray-900 !bg-transparent !font-sans"
+                style={{ backgroundColor: "transparent" }}
+                components={{
+                  code: (props) => <Code {...props} isLoading={isLoading} />,
+                }}
+              />
             </div>
           )}
-        </div>,
+        </div>
       );
-
-      // </think> 이후의 내용 추가
-      const remainingText = text.substring(endTagIndex + 8); // 8 = "</think>".length
-
-      if (remainingText.trim() !== "") {
-        segments.push(
-          <ReactMarkdown key="remaining" components={MarkdownComponents}>
-            {remainingText}
-          </ReactMarkdown>,
-        );
-      }
+      currentIndex = endTagIndex + 8;
     }
-
     return segments;
   };
 
@@ -174,10 +293,10 @@ const ChatModal: React.FC<ChatModalProps> = ({ onClose }) => {
       <h1 className="text-xl font-bold my-3" {...props} />
     ),
     h2: ({ node, ...props }: any) => (
-      <h2 className="text-xl font-bold my-3" {...props} />
+      <h2 className="text-lg font-bold my-3" {...props} />
     ),
     h3: ({ node, ...props }: any) => (
-      <h3 className="text-lg font-bold my-2" {...props} />
+      <h3 className="text-sm font-bold my-2" {...props} />
     ),
     h4: ({ node, ...props }: any) => (
       <h4 className="text-base font-bold my-2" {...props} />
@@ -240,8 +359,12 @@ const ChatModal: React.FC<ChatModalProps> = ({ onClose }) => {
       <td className="border border-gray-300 px-4 py-2" {...props} />
     ),
     // 수평선
-    hr: ({ node, ...props }: any) => (
-      <hr className="my-4 border-gray-300" {...props} />
+    hr: (props: any) => (
+      <hr
+        {...props}
+        className="bottom-0  border-gray-300 "
+        style={{ height: "1px", backgroundColor: "gray" }}
+      />
     ),
     // 강조 텍스트
     strong: ({ node, ...props }: any) => (
@@ -304,7 +427,7 @@ const ChatModal: React.FC<ChatModalProps> = ({ onClose }) => {
             ? NodeFilter.FILTER_ACCEPT
             : NodeFilter.FILTER_REJECT;
         },
-      },
+      }
     );
 
     let node;
@@ -330,8 +453,6 @@ const ChatModal: React.FC<ChatModalProps> = ({ onClose }) => {
     const contextMessage = currentDocumentText
       ? `\n\n현재 문서 내용:\n${currentDocumentText}`
       : "";
-
-    console.log(currentDocumentText);
 
     // 사용자 메시지 추가
     const userMessage: ChatMessage = {
@@ -385,7 +506,7 @@ const ChatModal: React.FC<ChatModalProps> = ({ onClose }) => {
             return updatedMessages;
           });
         },
-        contextMessage,
+        contextMessage
       );
     } catch (error) {
       console.error("채팅 API 오류:", error);
@@ -434,7 +555,7 @@ const ChatModal: React.FC<ChatModalProps> = ({ onClose }) => {
     try {
       localStorage.setItem(
         window.location.pathname,
-        JSON.stringify(newMessages),
+        JSON.stringify(newMessages)
       );
     } catch (error) {
       console.error("새 대화 내용을 저장하는데 실패했습니다:", error);
@@ -447,9 +568,15 @@ const ChatModal: React.FC<ChatModalProps> = ({ onClose }) => {
     inputRef.current?.focus();
   };
 
+  useEffect(() => {
+    mermaid.initialize({
+      theme: "dark",
+    });
+  }, []);
+
   return (
     <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center">
-      <div className="bg-white rounded-lg w-[90%] sm:w-full max-w-md h-[90vh] sm:h-[700px] sm:max-h-[80vh] shadow-lg flex flex-col">
+      <div className="bg-white rounded-lg  sm:w-full sm:max-x-md w-[95%] max-w-2xl h-[90vh] sm:h-[90vh] sm:max-h-[80vh] shadow-lg flex flex-col">
         {/* 헤더 */}
         <div className="p-4 border-b flex justify-between items-center">
           <button
@@ -495,7 +622,7 @@ const ChatModal: React.FC<ChatModalProps> = ({ onClose }) => {
                 <button
                   onClick={() =>
                     handleTemplateClick(
-                      "이 내용에서 만들 수 있는 컨텐츠 제목 3가지 뽑아줘",
+                      "이 내용에서 만들 수 있는 컨텐츠 제목 3가지 뽑아줘"
                     )
                   }
                   className="p-3 text-left bg-sky-50 hover:bg-sky-100 rounded-lg transition-colors"
@@ -546,22 +673,26 @@ const ChatModal: React.FC<ChatModalProps> = ({ onClose }) => {
                     </span>
                   </div>
                   <div className="markdown-wrapper">
-                    {/* {message.isBot ? (
-                      <>{processThinkTags(message.text)}</>
-                    ) : (
-                      message.text
-                    )} */}
-
                     {message.isBot ? (
                       message.text.includes("</think>") ? (
                         <>{processThinkTags(message.text)}</>
                       ) : (
-                        <ReactMarkdown components={MarkdownComponents}>
-                          {message.text}
-                        </ReactMarkdown>
+                        <MarkdownPreview
+                          source={message.text}
+                          className="!text-gray-900 !bg-transparent !font-sans"
+                          style={{ backgroundColor: "transparent" }}
+                          components={{
+                            ...MarkdownComponents,
+                            code: (props) => (
+                              <Code {...props} isLoading={isLoading} />
+                            ),
+                          }}
+                        />
                       )
                     ) : (
-                      message.text
+                      <span className="whitespace-pre-line break-words">
+                        {message.text}
+                      </span>
                     )}
                   </div>
                 </div>
