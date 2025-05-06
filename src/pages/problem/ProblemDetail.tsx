@@ -38,7 +38,7 @@ const ProblemDetail = () => {
   }
 
   return (
-    <div className="container mx-auto relative">
+    <div className="container mx-auto relative max-w-screen-lg">
       <div className="flex justify-between items-center p-4 mb-2">
         <h2 className="text-xl md:text-xl font-semibold text-gray-900">
           {problem.name}

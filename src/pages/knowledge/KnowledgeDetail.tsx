@@ -40,7 +40,7 @@ const KnowledgeDetail = () => {
   }
 
   return (
-    <div className="container mx-auto relative">
+    <div className="container mx-auto relative max-w-screen-lg">
       <div className="flex justify-between items-center p-4 mb-2">
         <h2 className="text-xl md:text-xl font-semibold text-gray-900">
           {knowledge.name}
@@ -85,7 +85,7 @@ const KnowledgeDetail = () => {
           </div>
         )}
 
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+        <div className="grid grid-cols-1">
           <div>
             <h3 className="text-lg font-medium text-gray-900 mb-2 p-4">요약</h3>
             <div className="p-4">
