@@ -11,7 +11,7 @@ import {
   ontologyApi,
 } from "../../api/dexApi";
 import { Knowledge, Ontology } from "../../types";
-import { FiPlus, FiMove } from "react-icons/fi";
+import { FiPlus, FiMove, FiDownload } from "react-icons/fi";
 import YouTubeSummaryButton from "../../components/YouTubeSummaryButton";
 import { createListQueryKey } from "../../api/query-keys";
 import { useState, useEffect, useCallback, KeyboardEvent } from "react";
@@ -272,6 +272,19 @@ const KnowledgeList = () => {
 
   const isInSelectionMode = selectedItems.length > 0;
 
+  const handleDownload = (knowledge: Knowledge) => {
+    const content = `# ${knowledge.name}\n\n${knowledge.summary || ""}`;
+    const blob = new Blob([content], { type: "text/markdown" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `${knowledge.name}.md`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  };
+
   return (
     <ListPageLayout
       title="지식 목록"
@@ -288,19 +301,49 @@ const KnowledgeList = () => {
         {isInSelectionMode && (
           <>
             <button
+              onClick={() => {
+                if (selectedItems.length === knowledgeList.length) {
+                  setSelectedItems([]);
+                } else {
+                  setSelectedItems(knowledgeList.map((k) => k.id));
+                }
+              }}
+              className="flex items-center gap-2 bg-gray-500 text-white px-4 py-2 rounded-lg hover:bg-gray-600 transition-colors"
+            >
+              {selectedItems.length === knowledgeList.length
+                ? "전체 해제"
+                : "전체 선택"}
+            </button>
+            <button
               onClick={exitSelectionMode}
               className="flex items-center gap-2 bg-gray-500 text-white px-4 py-2 rounded-lg hover:bg-gray-600 transition-colors"
             >
               취소
             </button>
             {selectedItems.length > 0 && (
-              <button
-                onClick={() => setIsMoveModalOpen(true)}
-                className="flex items-center gap-2 bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition-colors"
-              >
-                <FiMove />
-                이동
-              </button>
+              <>
+                <button
+                  onClick={() => setIsMoveModalOpen(true)}
+                  className="flex items-center gap-2 bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition-colors"
+                >
+                  <FiMove />
+                  이동
+                </button>
+                <button
+                  onClick={() => {
+                    selectedItems.forEach((id) => {
+                      const knowledge = knowledgeList.find((k) => k.id === id);
+                      if (knowledge) {
+                        handleDownload(knowledge);
+                      }
+                    });
+                  }}
+                  className="flex items-center gap-2 bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors"
+                >
+                  <FiDownload />
+                  다운로드
+                </button>
+              </>
             )}
           </>
         )}
