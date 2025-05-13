@@ -6,6 +6,7 @@ import { ontologyApi } from "../../api/dexApi";
 import { Ontology } from "../../types";
 import DropdownMenu from "../../components/DropdownMenu";
 import { createListQueryKey } from "../../api/query-keys";
+import YouTubeSummaryButton from "../../components/YouTubeSummaryButton";
 
 const OntologyList = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -189,6 +190,8 @@ const OntologyList = () => {
           </div>
         </div>
       )}
+
+      <YouTubeSummaryButton ontologies={ontologies} />
     </div>
   );
 };
