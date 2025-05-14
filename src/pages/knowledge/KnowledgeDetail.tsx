@@ -7,11 +7,11 @@ import { ChevronDownIcon, ChevronUpIcon } from "@heroicons/react/24/outline";
 import MermaidDiagram from "../../components/MermaidDiagram";
 import MarkdownContent from "../../components/MarkdownContent";
 import { removeThinkTags } from "../../utils/textUtils";
+import { runDifyWorkflow } from "../../api/dify";
 
 const KnowledgeDetail = () => {
   const { id, ontology_id } = useParams<{ id: string; ontology_id: string }>();
   const navigate = useNavigate();
-  const [isDescriptionOpen, setIsDescriptionOpen] = useState(false);
 
   const {
     data: knowledge,
@@ -22,6 +22,18 @@ const KnowledgeDetail = () => {
     queryFn: () => knowledgeApi.getById(Number(id)),
     enabled: !!id,
   });
+
+  const handleResummarize = async () => {
+    if (!knowledge?.link || !ontology_id) return;
+
+    try {
+      runDifyWorkflow(knowledge.link, Number(ontology_id));
+      // 요약이 완료된 후 페이지를 새로고침하거나 데이터를 다시 불러옵니다
+    } catch (error) {
+      console.error("재요약 중 오류 발생:", error);
+    } finally {
+    }
+  };
 
   if (isLoading) {
     return <div className="text-center py-10">데이터를 불러오는 중...</div>;
@@ -41,7 +53,7 @@ const KnowledgeDetail = () => {
 
   return (
     <div className="container mx-auto relative max-w-screen-lg">
-      <div className="flex justify-between items-center p-4 mb-2">
+      <div className="flex justify-between items-center p-4 mb-1">
         <h2 className="text-xl md:text-xl font-semibold text-gray-900">
           {knowledge.name}
         </h2>
@@ -62,6 +74,21 @@ const KnowledgeDetail = () => {
           </button>
         </div>
       </div>
+
+      {knowledge.updated_at && (
+        <div className="px-4 mb-3">
+          <p className="text-xs text-gray-500">
+            최종 업데이트:{" "}
+            {new Date(knowledge.updated_at).toLocaleString("ko-KR", {
+              year: "numeric",
+              month: "2-digit",
+              day: "2-digit",
+              hour: "2-digit",
+              minute: "2-digit",
+            })}
+          </p>
+        </div>
+      )}
 
       <div>
         {knowledge.link && (
@@ -87,7 +114,17 @@ const KnowledgeDetail = () => {
 
         <div className="grid grid-cols-1">
           <div>
-            <h3 className="text-lg font-medium text-gray-900 mb-2 p-4">요약</h3>
+            <div className="flex justify-between items-center p-4">
+              <h3 className="text-lg font-medium text-gray-900 mb-0">요약</h3>
+              {knowledge.link && (
+                <button
+                  onClick={handleResummarize}
+                  className="px-3 py-1 bg-green-600 text-white text-sm rounded-md hover:bg-green-700 disabled:bg-green-300"
+                >
+                  재요약
+                </button>
+              )}
+            </div>
             <div className="p-4">
               <MarkdownContent
                 content={removeThinkTags(knowledge.summary || "")}
